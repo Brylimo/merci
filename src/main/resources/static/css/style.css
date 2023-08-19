@@ -7,7 +7,9 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    z-index: 10;
+    z-index: 302;
     border-bottom: solid 1px blue;
     height: 6.1rem;
+    background-color: #181d27;
+    color: white;
 }
