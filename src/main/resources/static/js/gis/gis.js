@@ -1,10 +1,5 @@
-document.write('<script src="/js/gis/GisLayer.js">');
-
-var map;
-var view;
-
 $(() => {
-    var map = new ol.Map({
+    const map = new ol.Map({
        target: 'vMap',
        layers: [
            new ol.layer.Tile({
@@ -17,5 +12,14 @@ $(() => {
        })
     });
 
+    GisLayer.setMap(map);
+
+    map.on("click", (event) => {
+        const pixel = event.pixel;
+        const coordinate = ol.proj.transform(map.getCoordinateFromPixel(pixel), 'EPSG:3857', 'EPSG:4326');
+
+        // draw marker
+        GisLayer.pinMarker(coordinate[0], coordinate[1]);
+    });
 
 });
