@@ -1,0 +1,19 @@
+@charset "utf-8"; html body {
+    width: 100%;
+    height: auto;
+    font-size: 1.6rem;
+}
+
+.header {
+    background: linear-gradient(270deg, #ff9900, #ffcc80);
+    height: 7.2rem;
+    width: 100%;
+    position: fixed;
+    z-index: 3020;
+}
+
+.header .logo {
+    position: absolute;
+    top: 0;
+    height: 100%;
+}

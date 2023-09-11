@@ -1,5 +1,5 @@
 .sidebar {
-    top: 0;
+    /*top: 0;
     left: 0;
     padding-top: 61px;
     background-color: #181d27;
@@ -7,5 +7,12 @@
     min-height: 100%;
     width: 18rem;
     z-index: 32;
-    color: white;
+    color: white;*/
+    width: 29rem;
+    background: #331f00;
+    height: 100%;
+    position: fixed;
+    top: 6rem;
+    padding-top: 3rem;
+    z-index: 2000;
 }
