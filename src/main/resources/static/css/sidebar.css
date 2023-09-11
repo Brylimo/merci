@@ -1,18 +1,18 @@
 .sidebar {
-    /*top: 0;
-    left: 0;
-    padding-top: 61px;
-    background-color: #181d27;
-    position: absolute;
-    min-height: 100%;
-    width: 18rem;
-    z-index: 32;
-    color: white;*/
     width: 29rem;
-    background: #331f00;
+    background: #6A4A15;
     height: 100%;
     position: fixed;
     top: 6rem;
     padding-top: 3rem;
     z-index: 2000;
+}
+
+.sidebar ul li {
+    position: relative;
+    transition: 0.2s;
+}
+
+.sidebar ul li a {
+    position: relative;
 }

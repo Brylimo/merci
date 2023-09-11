@@ -1,4 +1,26 @@
 #vMap {
     width: 100%;
-    height: calc(100vh - 7.2rem);
+    height: 100vh;
 }
+
+.ol-attribution ul {
+    display: none !important;
+}
+
+.layer_modal_wrap {
+    position: fixed;
+    top: 7.2rem;
+    z-index: 1000;
+    height: 100%;
+    left: 60rem;
+}
+
+.layer_modal_con {
+    position: absolute;
+    width: 31rem;
+    height: 100%;
+    background: #fff;
+    right: 0;
+    overflow: auto;
+}
+

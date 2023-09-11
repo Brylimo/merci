@@ -5,7 +5,7 @@
 }
 
 .header {
-    background: linear-gradient(270deg, #ff9900, #ffcc80);
+    background: linear-gradient(270deg, #ffcc80, #ff9900);
     height: 7.2rem;
     width: 100%;
     position: fixed;

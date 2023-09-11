@@ -7,7 +7,7 @@ $(() => {
            })
        ],
        view: new ol.View({
-           center: ol.proj.fromLonLat([127, 36]),
+           center: ol.proj.fromLonLat([125.3, 36.5]),
            zoom: 7
        })
     });
