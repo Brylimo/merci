@@ -1,30 +1,66 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
   <link rel="stylesheet" th:href="@{/css/gis.css}">
+  <link rel="stylesheet" th:href="@{/css/layout.css}">
+  <link rel="stylesheet" th:href="@{/css/modal.css}">
   <link rel="stylesheet" href="../../static/css/layout.css">
 </head>
 <body>
-<th:block th:include="common/header"></th:block>
-<th:block th:include="common/sidebar"></th:block>
-<div class="layer_modal_wrap">
-  <div class="layer_modal_con">
-    <strong>지도</strong>
-    <div class="row">
-      <label>
-        <input type="checkbox" />
-        <p>앨범 등록</p>
-      </label>
-    </div>
-  </div>
-</div>
-
+<div class="main-wrapper">
+  <th:block th:include="common/header"></th:block>
+  <th:block th:include="common/sidebar"></th:block>
   <section class="content">
-    <div id="vMap"></div>
+    <div class="layer_modal_wrap">
+      <div class="layer_modal_con">
+        <strong>지도</strong>
+        <div class="row" style="display: flex; flex-direction: column;">
+          <label style="display: flex;padding: 12px;">
+            <input type="checkbox" checked/>
+            <p>장소 등록</p>
+          </label>
+          <div id="addLocBox" aria-expanded="true">
+            <label style="display: flex;padding: 12px;">
+              <input type="checkbox" id="chkMANUAL" value="MANUAL" onchange="GisLayer.layerCheckHandler(this.value)"/>
+              <p>직접 등록</p>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-wrapper">
+      <!--map-->
+      <div id="vMap"></div>
+      <div class="bottom-alert">
+        <strong>해당 장소를 등록하시겠습니까?</strong>
+        <button>yes</button>
+        <button>no</button>
+      </div>
+    </div>
 
     <script th:src="@{/js/gis/gis.js}"></script>
+    <script th:src="@{/js/util/modal.js}"></script>
+
+    <!-- modal -->
+    <div class="modal register-modal modal-none">
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <strong>장소 추가하기</strong>
+          <button class="modal-close">닫기</button>
+        </div>
+        <div>
+          content
+        </div>
+        <div>
+          <button class="modal-close">닫기</button>
+        </div>
+      </div>
+    </div>
+
   </section>
+</div>
 </body>
 </html>

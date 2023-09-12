@@ -20,12 +20,11 @@ public class GisController {
 
     @GetMapping("/gis")
     public String gis(Model model) {
-        log.debug("gis");
+        log.debug("gis controller starts!");
 
         List<User> users = userService.getAllUsers();
         List<Spot> spots = users.get(0).getSpots();
 
-        System.out.println("spots = " + spots.get(0).getLoc());
         return "gis/gis";
     }
 }

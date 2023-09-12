@@ -1,6 +1,6 @@
 #vMap {
     width: 100%;
-    height: 100vh;
+    height: 100%;
 }
 
 .ol-attribution ul {
@@ -24,3 +24,22 @@
     overflow: auto;
 }
 
+.row {
+    display: flex;
+}
+
+.map-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.bottom-alert {
+    position: absolute;
+    bottom: 0;
+    left: 31rem;
+    height: 10rem;
+    background-color: #fff;
+    width: calc(100% - 31rem);
+    display: none;
+}

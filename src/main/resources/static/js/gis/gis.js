@@ -16,10 +16,13 @@ $(() => {
 
     map.on("click", (event) => {
         const pixel = event.pixel;
-        const coordinate = ol.proj.transform(map.getCoordinateFromPixel(pixel), 'EPSG:3857', 'EPSG:4326');
 
-        // draw marker
-        GisLayer.pinMarker(coordinate[0], coordinate[1]);
+        if (GisLayer.manualFlag) {
+            const coordinate = ol.proj.transform(map.getCoordinateFromPixel(pixel), 'EPSG:3857', 'EPSG:4326');
+
+            // draw marker
+            GisLayer.pinMarker(coordinate[0], coordinate[1]);
+        }
     });
 
 });

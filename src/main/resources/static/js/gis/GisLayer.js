@@ -1,7 +1,19 @@
-const GisLayer = {
+let GisLayer = {
     map: null,
+    manualFlag: false,
     setMap: map => {
         GisLayer.map = map;
+    },
+    layerCheckHandler: (target) => {
+        if (target === "MANUAL") {
+            if ($("#chk"+target).is(':checked')) {
+                GisLayer.manualFlag = true;
+            } else {
+                $(".bottom-alert").hide();
+                GisLayer.manualFlag = false;
+                GisLayer.removeLayer("temp", "temp_marker")
+            }
+        }
     },
     removeLayer: (source, target) => {
         let array = [];
@@ -43,5 +55,7 @@ const GisLayer = {
         markerLayer.set("temp", "temp_marker");
 
         GisLayer.map.addLayer(markerLayer);
+
+        $(".bottom-alert").show();
     }
 }
