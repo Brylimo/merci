@@ -1,5 +1,7 @@
 package com.thxpapa.merci.config.web;
 
+import com.thxpapa.merci.service.util.KakaoUtil;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -21,5 +23,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .setCachePeriod(0)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());
+    }
+
+    @Bean
+    public KakaoUtil kakaoUtil() {
+        return new KakaoUtil();
     }
 }
