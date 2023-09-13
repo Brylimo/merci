@@ -35,9 +35,12 @@
       <!--map-->
       <div id="vMap"></div>
       <div class="bottom-alert">
+        <div class="place">
+          <p></p>
+        </div>
         <strong>해당 장소를 등록하시겠습니까?</strong>
-        <button>yes</button>
-        <button>no</button>
+        <button class="yes">네</button>
+        <button class="no">아니요</button>
       </div>
     </div>
 
@@ -52,10 +55,22 @@
           <button class="modal-close">닫기</button>
         </div>
         <div>
-          content
-        </div>
-        <div>
-          <button class="modal-close">닫기</button>
+          <form>
+            <div class="item">
+              <label>
+                <span>이름 *</span>
+              </label>
+              <input type="text" id="placeName" name="placeName" placeholder="장소이름을 입력해 주세요.">
+            </div>
+            <div class="item">
+              <label>
+                <span>위치 *</span>
+              </label>
+              <input type="text" id="placeLoc" name="placeLoc" readonly="readonly">
+            </div>
+            <button type="button">등록</button>
+            <button class="modal-close">닫기</button>
+          </form>
         </div>
       </div>
     </div>

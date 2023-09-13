@@ -55,7 +55,5 @@ let GisLayer = {
         markerLayer.set("temp", "temp_marker");
 
         GisLayer.map.addLayer(markerLayer);
-
-        $(".bottom-alert").show();
     }
 }
