@@ -39,7 +39,7 @@ let GisLayer = {
                 anchor: [10, 10],
                 anchorXUnits: 'pixels',
                 anchorYUnits: 'pixels',
-                src: '/images/marker/marker_red.png'
+                src: '/img/marker/marker_red.png'
             }))
         });
         feature.setStyle(iconStyle);

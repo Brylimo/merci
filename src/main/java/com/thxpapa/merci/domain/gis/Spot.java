@@ -1,11 +1,9 @@
 package com.thxpapa.merci.domain.gis;
 
+import com.thxpapa.merci.domain.file.MerciFile;
 import com.thxpapa.merci.domain.user.User;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.CreationTimestamp;
@@ -13,9 +11,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @Entity
 @Table(name="spot", schema="datamart")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "spotUid", callSuper=false)
 @ToString
 public class Spot {
@@ -31,6 +29,11 @@ public class Spot {
     @Comment("장소")
     @Column(name="loc", length = 40, nullable = false)
     private String loc;
+
+    @Lob
+    @Comment("장소설명")
+    @Column(name="exp", nullable = true)
+    private String exp;
 
     @Comment("경도")
     @Column(name="lon")
@@ -59,4 +62,17 @@ public class Spot {
     @ManyToOne
     @JoinColumn(name="userId")
     private User user;
+
+    @OneToOne
+    @JoinColumn(name="merciFileId")
+    private MerciFile merciFile;
+
+    @Builder
+    public Spot(String name, String loc, String exp, Double lon, Double lat) {
+        this.name = name;
+        this.loc = loc;
+        this.exp = exp;
+        this.lon = lon;
+        this.lat = lat;
+    }
 }

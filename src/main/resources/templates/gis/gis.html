@@ -55,18 +55,30 @@
           <button class="modal-close">닫기</button>
         </div>
         <div>
-          <form>
+          <form action="/gis/spot/register" method="post" enctype="multipart/form-data">
+            <div class="item">
+              <label>
+                <span>대표이미지  </span>
+              </label>
+              <input type="file" multiple="multiple" name="spotImg">
+            </div>
             <div class="item">
               <label>
                 <span>이름 *</span>
               </label>
-              <input type="text" id="placeName" name="placeName" placeholder="장소이름을 입력해 주세요.">
+              <input type="text" id="spotName" name="spotName" placeholder="장소이름을 입력해 주세요." required>
             </div>
             <div class="item">
               <label>
                 <span>위치 *</span>
               </label>
-              <input type="text" id="placeLoc" name="placeLoc" readonly="readonly">
+              <input type="text" id="spotLoc" name="spotLoc" readonly="readonly" required>
+            </div>
+            <div class="item">
+              <label>
+                <span>설명  </span>
+              </label>
+              <textarea id="spotExp" name="spotExp" rows="4" placeholder="장소설명을 입력해 주세요."></textarea>
             </div>
             <button type="button">등록</button>
             <button class="modal-close">닫기</button>
@@ -74,7 +86,6 @@
         </div>
       </div>
     </div>
-
   </section>
 </div>
 </body>

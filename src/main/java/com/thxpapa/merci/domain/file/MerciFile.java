@@ -1,4 +1,4 @@
-package com.thxpapa.merci.domain.gis;
+package com.thxpapa.merci.domain.file;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,29 +10,23 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name="album", schema="datamart")
+@Table(name="merci_file", schema="datamart")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = "albumUid", callSuper=false)
+@EqualsAndHashCode(of = "merciFileUid", callSuper=false)
 @ToString
-public class Album {
+public class MerciFile {
     @Id
-    @Column(name="album_uid")
+    @Column(name="merci_file_uid")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int albumUid;
+    private int merciFileUid;
 
-    @Comment("앨범이름")
-    @Column(name="name", length = 45, nullable = true)
-    private String name;
+    @Comment("업로드 파일 이름")
+    @Column(name="upload_name", length = 255)
+    private String uploadName;
 
-    @Comment("좋아요 개수")
-    @Column(name="like_cnt")
-    @ColumnDefault("0")
-    private int likeCnt;
-
-    @Lob
-    @Comment("앨범설명")
-    @Column(name="exp", nullable = true)
-    private String exp;
+    @Comment("저장된 파일 이름")
+    @Column(name="store_name", length = 255)
+    private String storeName;
 
     @Comment("상태정보")
     @Column(name="status_cd")
@@ -49,14 +43,9 @@ public class Album {
     @Column(name="mod_dt")
     private LocalDateTime modDt;
 
-    @ManyToOne
-    @JoinColumn(name="spotId")
-    private Spot spot;
-
     @Builder
-    public Album(String name, int likeCnt, String exp) {
-        this.name = name;
-        this.likeCnt = likeCnt;
-        this.exp = exp;
+    public MerciFile(String uploadName, String storeName) {
+        this.uploadName = uploadName;
+        this.storeName = storeName;
     }
 }

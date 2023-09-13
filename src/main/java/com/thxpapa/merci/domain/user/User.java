@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 @Entity
 @Table(name="user", schema="datamart")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "userUid", callSuper=false)
 @ToString
 public class User {
@@ -60,4 +60,13 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Spot> spots = new ArrayList<Spot>();
+
+    @Builder
+    public User(String name, String email, String nickname, String password, String intro) {
+        this.name = name;
+        this.email = email;
+        this.nickname = nickname;
+        this.password = password;
+        this.intro = intro;
+    }
 }
