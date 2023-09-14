@@ -30,6 +30,7 @@ public class FileUtil {
         return MerciFile.builder()
                         .uploadName(originalFileName)
                         .storeName(newFileName)
+                        .statusCd("01")
                         .build();
     }
 

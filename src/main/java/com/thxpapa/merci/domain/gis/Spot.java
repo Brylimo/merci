@@ -45,9 +45,9 @@ public class Spot {
     private Double lat;
 
     @Comment("상태정보")
-    @Column(name="status_cd")
-    @ColumnDefault("0")
-    private int statusCd;
+    @Column(name="status_cd", length = 3, nullable = false)
+    @ColumnDefault("'01'")
+    private String statusCd;
 
     @Comment("등록 날짜 시간")
     @CreationTimestamp
@@ -68,11 +68,13 @@ public class Spot {
     private MerciFile merciFile;
 
     @Builder
-    public Spot(String name, String loc, String exp, Double lon, Double lat) {
+    public Spot(String name, String loc, String exp, Double lon, Double lat, MerciFile merciFile, String statusCd) {
         this.name = name;
         this.loc = loc;
         this.exp = exp;
         this.lon = lon;
         this.lat = lat;
+        this.statusCd = statusCd;
+        this.merciFile = merciFile;
     }
 }

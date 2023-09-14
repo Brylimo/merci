@@ -1,11 +1,9 @@
 package com.thxpapa.merci.web;
 
 import com.thxpapa.merci.dto.ErrorResponse;
-import com.thxpapa.merci.dto.SpotRegisterRequestDto;
-import com.thxpapa.merci.util.FileUtil;
 import com.thxpapa.merci.util.KakaoUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,29 +14,21 @@ import java.util.Map;
 
 @Slf4j
 @Controller
+@RequiredArgsConstructor
 @RequestMapping(value = "/gis")
 public class GisController {
-    @Autowired
-    private KakaoUtil kakaoUtil;
-    @Autowired
-    private FileUtil fileUtil;
+
+    private final KakaoUtil kakaoUtil;
 
     @GetMapping("/main")
-    public String gis(Model model) {
-        log.debug("main controller starts!");
-
+    public String main(Model model) {
+        log.debug("main starts!");
         return "gis/gis";
     }
 
-    @PostMapping("/spot/register")
-    public void spotRegister(@ModelAttribute SpotRegisterRequestDto spotRegisterRequestDto) {
-        // todo spotregister func
-    }
-
-    @ResponseBody
     @GetMapping("/geo/cvtcoordtoaddr.json")
     public ResponseEntity<Object> cvtCoordToAddr(@RequestParam("lon") String lon, @RequestParam("lat") String lat) {
-        log.debug("cvtcoordtoaddr controller starts!");
+        log.debug("cvtcoordtoaddr starts!");
 
         try {
             Map<String, Object> res = kakaoUtil.cvtCoordToAddr(lon, lat);
@@ -49,7 +39,7 @@ public class GisController {
 
             return ResponseEntity.status(HttpStatus.OK).body(res);
         } catch (Exception e) {
-            log.debug("cvtcoordtoaddr controller error occurred!");
+            log.debug("cvtcoordtoaddr error occurred!");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
         }

@@ -29,9 +29,9 @@ public class MerciFile {
     private String storeName;
 
     @Comment("상태정보")
-    @Column(name="status_cd")
-    @ColumnDefault("0")
-    private int statusCd;
+    @Column(name="status_cd", length = 3, nullable = false)
+    @ColumnDefault("'01'")
+    private String statusCd;
 
     @Comment("등록 날짜 시간")
     @CreationTimestamp
@@ -44,8 +44,9 @@ public class MerciFile {
     private LocalDateTime modDt;
 
     @Builder
-    public MerciFile(String uploadName, String storeName) {
+    public MerciFile(String uploadName, String storeName, String statusCd) {
         this.uploadName = uploadName;
         this.storeName = storeName;
+        this.statusCd = statusCd;
     }
 }

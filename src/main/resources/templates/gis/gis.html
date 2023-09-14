@@ -55,7 +55,9 @@
           <button class="modal-close">닫기</button>
         </div>
         <div>
-          <form action="/gis/spot/register" method="post" enctype="multipart/form-data">
+          <form action="/spot/register" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="spotLon">
+            <input type="hidden" name="spotLat">
             <div class="item">
               <label>
                 <span>대표이미지  </span>
@@ -80,7 +82,7 @@
               </label>
               <textarea id="spotExp" name="spotExp" rows="4" placeholder="장소설명을 입력해 주세요."></textarea>
             </div>
-            <button type="button">등록</button>
+            <button type="submit" class="register">등록</button>
             <button class="modal-close">닫기</button>
           </form>
         </div>

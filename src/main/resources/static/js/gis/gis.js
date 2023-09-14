@@ -48,7 +48,9 @@ $(() => {
                 success: (res) => {
                     $(".bottom-alert").show();
                     $(".bottom-alert > .place > p").text(res["address_name"]);
-                    $(".modal #placeLoc").val(res["address_name"]);
+                    $(".modal input[name='spotLon']").val(lon);
+                    $(".modal input[name='spotLat']").val(lat);
+                    $(".modal #spotLoc").val(res["address_name"]);
                 },
                 error: (error) => {
                     alert("위치 찾기에 실패했습니다.\n해당 문제가 지속될 경우 관리자에게 문의하여 주십시요.");

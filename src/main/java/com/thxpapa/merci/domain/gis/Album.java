@@ -35,9 +35,9 @@ public class Album {
     private String exp;
 
     @Comment("상태정보")
-    @Column(name="status_cd")
-    @ColumnDefault("0")
-    private int statusCd;
+    @Column(name="status_cd", length = 3, nullable = false)
+    @ColumnDefault("'01'")
+    private String statusCd;
 
     @Comment("등록 날짜 시간")
     @CreationTimestamp
@@ -54,9 +54,10 @@ public class Album {
     private Spot spot;
 
     @Builder
-    public Album(String name, int likeCnt, String exp) {
+    public Album(String name, int likeCnt, String exp, String statusCd) {
         this.name = name;
         this.likeCnt = likeCnt;
         this.exp = exp;
+        this.statusCd = statusCd;
     }
 }
