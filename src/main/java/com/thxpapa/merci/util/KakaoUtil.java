@@ -17,7 +17,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -27,7 +26,7 @@ public class KakaoUtil {
     @Value("${kakao.api.akey}")
     private String aKey;
 
-    public Map<String, Object> cvtCoordToAddr(String x, String y) {
+    public Object cvtCoordToAddr(String x, String y) {
         if (x==null || y==null) return null;
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -47,7 +46,7 @@ public class KakaoUtil {
                 JsonObject object = (JsonObject) documents.get(0);
                 JsonObject res = (JsonObject) object.get("address");
 
-                return new ObjectMapper().readValue(res.toString(), Map.class);
+                return new ObjectMapper().readValue(res.toString(), Object.class);
             }
 
             return null;
@@ -81,6 +80,34 @@ public class KakaoUtil {
             return null;
         } catch (Exception e) {
             log.error("cvtAddrToCoord error occurred!");
+            return null;
+        }
+    }
+
+    public List<Object> cvtKeywordToCoord(String keyword) {
+        if (keyword == null) return null;
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", aKey);
+
+            HttpEntity<?> httpEntity = new HttpEntity<>(headers);
+            UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(kakaoUrl+"/v2/local/search/keyword.json").queryParam("query", keyword).build();
+            ResponseEntity<String> response = restTemplate.exchange(uriComponents.toString(), HttpMethod.GET, httpEntity, String.class);
+
+            if (response.getStatusCode().value() == 200) {
+                JsonParser jsonParser = new JsonParser();
+
+                JsonObject body = (JsonObject) jsonParser.parse(response.getBody());
+                JsonArray documents = (JsonArray) body.get("documents");
+
+                return Arrays.asList(new ObjectMapper().readValue(documents.toString(), Object[].class));
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("cvtKeywordToCoord error occurred!");
             return null;
         }
     }

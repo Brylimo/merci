@@ -24,8 +24,30 @@ $(() => {
     });
 
     $(".bottom-alert .no").on("click", () => {
-        GisLayer.removeLayer("pin", "pin_marker")
+        GisLayer.removeLayer("red_pin", "pin_red_marker")
         $(".bottom-alert").hide();
+    });
+
+    // search-location event handling
+    $(".search-location-btn").on("click", () => {
+       const search = $("#search-location").val();
+
+        $.ajax({
+            url: "/gis/geo/cvtquerytocoord.json",
+            type: "GET",
+            data: {
+                query: search
+            },
+            success: (res) => {
+                res.forEach((item) => {
+                    GisLayer.pinBlueMarker(item.x, item.y);
+                })
+            },
+            error: (error) => {
+                alert("위치 찾기에 실패했습니다.\n해당 문제가 지속될 경우 관리자에게 문의하여 주십시요.");
+                console.error(error.code);
+            }
+        });
     });
 
     // map event handling
@@ -33,7 +55,7 @@ $(() => {
         const pixel = event.pixel;
 
         if (GisLayer.manualFlag) {  // manual location register
-            GisLayer.removeLayer("pin", "pin_marker")
+            GisLayer.removeLayer("red_pin", "pin_red_marker")
 
             const coordinate = ol.proj.transform(map.getCoordinateFromPixel(pixel), 'EPSG:3857', 'EPSG:4326');
 
@@ -41,7 +63,7 @@ $(() => {
             const lat = coordinate[1];
 
             // draw marker
-            GisLayer.pinMarker(lon, lat);
+            GisLayer.pinRedMarker(lon, lat);
 
             $.ajax({
                 url: "/gis/geo/cvtcoordtoaddr.json",
@@ -73,7 +95,7 @@ const layerCheckHandler = (target) => {
         } else {
             $(".bottom-alert").hide();
             GisLayer.manualFlag = false;
-            GisLayer.removeLayer("pin", "pin_marker");
+            GisLayer.removeLayer("red_pin", "pin_red_marker");
         }
     } else if (target === "CURRENT") {
         if ($("#chk"+target).is(':checked')) {

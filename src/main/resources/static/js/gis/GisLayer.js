@@ -25,7 +25,7 @@ class GisLayer {
         }
     }
 
-    static pinMarker(lon, lat) {
+    static pinRedMarker(lon, lat) {
         const feature = new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326', "EPSG:900913"))
         });
@@ -40,17 +40,45 @@ class GisLayer {
         });
         feature.setStyle(iconStyle);
 
-        const markerSource = new ol.source.Vector({
+        const markerRedSource = new ol.source.Vector({
             features: [feature]
         });
 
-        const markerLayer = new ol.layer.Vector({
-            source: markerSource
+        const markerRedLayer = new ol.layer.Vector({
+            source: markerRedSource
         });
 
-        markerLayer.set("pin", "pin_marker");
+        markerRedLayer.set("red_pin", "pin_red_marker");
 
-        this.map.addLayer(markerLayer);
+        this.map.addLayer(markerRedLayer);
+    }
+
+    static pinBlueMarker(lon, lat) {
+        const feature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326', "EPSG:900913"))
+        });
+
+        const iconStyle = new ol.style.Style({
+            image: new ol.style.Icon(({
+                anchor: [10, 10],
+                anchorXUnits: 'pixels',
+                anchorYUnits: 'pixels',
+                src: '/img/marker/marker_blue.png'
+            }))
+        });
+        feature.setStyle(iconStyle);
+
+        const markerBlueSource = new ol.source.Vector({
+            features: [feature]
+        });
+
+        const markerBlueLayer = new ol.layer.Vector({
+            source: markerBlueSource
+        });
+
+        markerBlueLayer.set("blue_pin", "pin_blue_marker");
+
+        this.map.addLayer(markerBlueLayer);
     }
 
     static pinCurrentPoint(lon, lat) {

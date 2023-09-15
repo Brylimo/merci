@@ -1,7 +1,7 @@
 package com.thxpapa.merci.web;
 
 import com.thxpapa.merci.dto.ErrorResponse;
-import com.thxpapa.merci.util.KakaoUtil;
+import com.thxpapa.merci.service.gis.GeoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,7 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Controller
@@ -19,7 +18,7 @@ import java.util.Map;
 @RequestMapping(value = "/gis")
 public class GisController {
 
-    private final KakaoUtil kakaoUtil;
+    private final GeoService geoService;
 
     @GetMapping("/main")
     public String main(Model model) {
@@ -32,7 +31,7 @@ public class GisController {
         log.debug("cvtcoordtoaddr starts!");
 
         try {
-            Map<String, Object> res = kakaoUtil.cvtCoordToAddr(lon, lat);
+            Object res = geoService.cvtCoordToAddr(lon, lat);
 
             if (res == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("can't find address"));
@@ -46,20 +45,20 @@ public class GisController {
         }
     }
 
-    @GetMapping("/geo/cvtaddrtocoord.json")
-    public ResponseEntity<Object> cvtAddrToACoord(@RequestParam("query") String query) {
-        log.debug("cvtaddrtocoord starts!");
+    @GetMapping("/geo/cvtquerytocoord.json")
+    public ResponseEntity<Object> cvtQueryToCoord(@RequestParam("query") String query) {
+        log.debug("cvtquerytocoord starts!");
 
         try {
-            List<Object> res = kakaoUtil.cvtAddrToCoord(query);
+            List<Object> res = geoService.cvtQueryToCoord(query);
 
             if (res == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("can't find location"));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("can't find query data"));
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(res);
         } catch (Exception e) {
-            log.debug("cvtaddrtocoord error occurred!");
+            log.debug("cvtquerytocoord error occurred!");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
         }
