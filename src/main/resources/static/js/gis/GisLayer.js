@@ -1,24 +1,27 @@
-let GisLayer = {
-    map: null,
-    manualFlag: false,
-    setMap: map => {
-        GisLayer.map = map;
-    },
-    layerCheckHandler: (target) => {
+class GisLayer {
+    static map = null;
+    static manualFlag = false;
+
+    static setMap(map) {
+        this.map = map;
+    }
+
+    static layerCheckHandler(target) {
         if (target === "MANUAL") {
             if ($("#chk"+target).is(':checked')) {
-                GisLayer.manualFlag = true;
+                this.manualFlag = true;
             } else {
                 $(".bottom-alert").hide();
-                GisLayer.manualFlag = false;
-                GisLayer.removeLayer("temp", "temp_marker")
+                this.manualFlag = false;
+                this.removeLayer("pin", "pin_marker")
             }
         }
-    },
-    removeLayer: (source, target) => {
+    }
+
+    static removeLayer(source, target) {
         let array = [];
 
-        GisLayer.map.getLayers().forEach((layer) => {
+        this.map.getLayers().forEach((layer) => {
             if (layer.get(source) == target) {
                 array.push(layer);
             }
@@ -26,11 +29,12 @@ let GisLayer = {
 
         while (array.length) {
             const lastElement = array.pop();
-            GisLayer.map.removeLayer(lastElement);
+            this.map.removeLayer(lastElement);
         }
-    },
-    pinMarker: (lon, lat) => {
-        let feature = new ol.Feature({
+    }
+
+    static pinMarker(lon, lat) {
+        const feature = new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326', "EPSG:900913"))
         });
 
@@ -52,8 +56,39 @@ let GisLayer = {
             source: markerSource
         });
 
-        markerLayer.set("temp", "temp_marker");
+        markerLayer.set("pin", "pin_marker");
 
-        GisLayer.map.addLayer(markerLayer);
+        this.map.addLayer(markerLayer);
+    }
+
+    static pinCurrentPoint(lon, lat) {
+        const feature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326', "EPSG:900913"))
+        });
+
+        const currentPointStyle = new ol.style.Style({
+            image: new ol.style.Circle(({
+                radius: 3,
+                stroke: new ol.style.Stroke({
+                    color: "deeppink"
+                }),
+                fill: new ol.style.Fill({
+                    color: "deeppink"
+                })
+            }))
+        });
+        feature.setStyle(currentPointStyle);
+
+        const currentPointVSource = new ol.source.Vector({
+            features: [feature]
+        });
+
+        const currentPointLayer = new ol.layer.Vector({
+            source: currentPointVSource
+        });
+
+        currentPointLayer.set("current_point", "current_point_marker");
+
+        this.map.addLayer(currentPointLayer);
     }
 }

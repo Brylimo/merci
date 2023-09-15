@@ -1,9 +1,10 @@
 $(() => {
+    // create map
     const map = new ol.Map({
        target: 'vMap',
        layers: [
            new ol.layer.Tile({
-               source: new ol.source.OSM()
+               source: new ol.source.OSM()  // use OSM tile
            })
        ],
        view: new ol.View({
@@ -12,23 +13,27 @@ $(() => {
        })
     });
 
+    // register map
     GisLayer.setMap(map);
+    executeRealTimeLocation();
 
+    // bottom alert event handling
     $(".bottom-alert .yes").on("click", () => {
         $(".modal").removeClass("modal-none");
         $(".modal").addClass("modal-show");
     });
 
     $(".bottom-alert .no").on("click", () => {
-        GisLayer.removeLayer("temp", "temp_marker")
+        GisLayer.removeLayer("pin", "pin_marker")
         $(".bottom-alert").hide();
     });
 
+    // map event handling
     map.on("click", (event) => {
         const pixel = event.pixel;
 
-        if (GisLayer.manualFlag) {
-            GisLayer.removeLayer("temp", "temp_marker")
+        if (GisLayer.manualFlag) {  // manual location register
+            GisLayer.removeLayer("pin", "pin_marker")
 
             const coordinate = ol.proj.transform(map.getCoordinateFromPixel(pixel), 'EPSG:3857', 'EPSG:4326');
 
@@ -59,5 +64,17 @@ $(() => {
             });
         }
     });
-
 });
+
+const watchPositionHandler = (rtData) => {
+    const { coords } = rtData;
+
+    GisLayer.pinCurrentPoint(coords.longitude, coords.latitude);
+}
+
+const executeRealTimeLocation = () => {
+    if (!navigator.geolocation) {
+        console.log("실시간 위치 정보가 지원되지 않습니다.");
+    }
+    navigator.geolocation.watchPosition(watchPositionHandler);
+}
