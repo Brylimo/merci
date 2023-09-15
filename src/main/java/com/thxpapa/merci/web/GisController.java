@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -40,6 +41,25 @@ public class GisController {
             return ResponseEntity.status(HttpStatus.OK).body(res);
         } catch (Exception e) {
             log.debug("cvtcoordtoaddr error occurred!");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
+        }
+    }
+
+    @GetMapping("/geo/cvtaddrtocoord.json")
+    public ResponseEntity<Object> cvtAddrToACoord(@RequestParam("query") String query) {
+        log.debug("cvtaddrtocoord starts!");
+
+        try {
+            List<Object> res = kakaoUtil.cvtAddrToCoord(query);
+
+            if (res == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("can't find location"));
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(res);
+        } catch (Exception e) {
+            log.debug("cvtaddrtocoord error occurred!");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
         }

@@ -15,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -34,16 +36,16 @@ public class KakaoUtil {
             headers.set("Authorization", aKey);
 
             HttpEntity<?> httpEntity = new HttpEntity<>(headers);
-            UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(kakaoUrl+"/v2/local/geo/coord2regioncode.json").queryParam("x", x).queryParam("y", y).build().encode();
+            UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(kakaoUrl+"/v2/local/geo/coord2address.json").queryParam("x", x).queryParam("y", y).queryParam("input_coord", "WGS84").build().encode();
             ResponseEntity<String> response = restTemplate.exchange(uriComponents.toString(), HttpMethod.GET, httpEntity, String.class);
 
             if (response.getStatusCode().value() == 200) {
                 JsonParser jsonParser = new JsonParser();
 
-                JsonObject object = (JsonObject) jsonParser.parse(response.getBody());
-                JsonArray jsonArray = (JsonArray) object.get("documents");
-
-                JsonObject res = (JsonObject) jsonArray.get(0);
+                JsonObject body = (JsonObject) jsonParser.parse(response.getBody());
+                JsonArray documents = (JsonArray) body.get("documents");
+                JsonObject object = (JsonObject) documents.get(0);
+                JsonObject res = (JsonObject) object.get("address");
 
                 return new ObjectMapper().readValue(res.toString(), Map.class);
             }
@@ -51,6 +53,34 @@ public class KakaoUtil {
             return null;
         } catch(Exception e) {
             log.error("cvtCoordToAddr error occurred!");
+            return null;
+        }
+    }
+
+    public List<Object> cvtAddrToCoord(String address) {
+        if (address == null) return null;
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", aKey);
+
+            HttpEntity<?> httpEntity = new HttpEntity<>(headers);
+            UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(kakaoUrl+"/v2/local/search/address.json").queryParam("query", address).build();
+            ResponseEntity<String> response = restTemplate.exchange(uriComponents.toString(), HttpMethod.GET, httpEntity, String.class);
+
+            if (response.getStatusCode().value() == 200) {
+                JsonParser jsonParser = new JsonParser();
+
+                JsonObject body = (JsonObject) jsonParser.parse(response.getBody());
+                JsonArray documents = (JsonArray) body.get("documents");
+
+                return Arrays.asList(new ObjectMapper().readValue(documents.toString(), Object[].class));
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("cvtAddrToCoord error occurred!");
             return null;
         }
     }

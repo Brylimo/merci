@@ -66,8 +66,56 @@ $(() => {
     });
 });
 
+const layerCheckHandler = (target) => {
+    if (target === "MANUAL") {
+        if ($("#chk"+target).is(':checked')) {
+            GisLayer.manualFlag = true;
+        } else {
+            $(".bottom-alert").hide();
+            GisLayer.manualFlag = false;
+            GisLayer.removeLayer("pin", "pin_marker");
+        }
+    } else if (target === "CURRENT") {
+        if ($("#chk"+target).is(':checked')) {
+            const lon = GisLayer.currentCoords.lon;
+            const lat = GisLayer.currentCoords.lat;
+
+            if (lon && lat) {
+                $.ajax({
+                    url: "/gis/geo/cvtcoordtoaddr.json",
+                    type: "GET",
+                    data: {
+                        lon: lon,
+                        lat: lat
+                    },
+                    success: (res) => {
+                        $(".modal input[name='spotLon']").val(lon);
+                        $(".modal input[name='spotLat']").val(lat);
+                        $(".modal #spotLoc").val(res["address_name"]);
+
+                        $(".modal").removeClass("modal-none");
+                        $(".modal").addClass("modal-show");
+                    },
+                    error: (error) => {
+                        alert("위치 찾기에 실패했습니다.\n해당 문제가 지속될 경우 관리자에게 문의하여 주십시요.");
+                        console.error(error.code);
+                    }
+                });
+            } else {
+                alert("현재 위치를 등록할 수 없습니다.");
+            }
+
+        } else {
+
+        }
+    }
+}
+
 const watchPositionHandler = (rtData) => {
     const { coords } = rtData;
+
+    GisLayer.currentCoords.lon = coords.longitude;
+    GisLayer.currentCoords.lat = coords.latitude;
 
     GisLayer.pinCurrentPoint(coords.longitude, coords.latitude);
 }

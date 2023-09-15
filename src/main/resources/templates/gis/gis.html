@@ -23,12 +23,16 @@
           </label>
           <div id="addLocBox" aria-expanded="true">
             <label style="display: flex;padding: 12px;">
-              <input type="checkbox" id="chkMANUAL" value="MANUAL" onchange="GisLayer.layerCheckHandler(this.value)"/>
+              <input type="checkbox" id="chkMANUAL" value="MANUAL" onchange="layerCheckHandler(this.value)"/>
               <p>직접 등록</p>
             </label>
             <label style="display: flex;padding: 12px;">
-              <input type="checkbox" id="chkCURRENT" value="CURRENT" onchange="GisLayer.layerCheckHandler(this.value)"/>
+              <input type="checkbox" id="chkCURRENT" value="CURRENT" onchange="layerCheckHandler(this.value)"/>
               <p>현재 위치 등록</p>
+            </label>
+            <label style="display: flex;padding: 12px;">
+              <input type="checkbox" id="chkSEARCH" value="SEARCH" onchange="layerCheckHandler(this.value)"/>
+              <p>검색 위치 등록</p>
             </label>
           </div>
         </div>
@@ -84,7 +88,7 @@
               <label>
                 <span>설명  </span>
               </label>
-              <textarea id="spotExp" name="spotExp" rows="4" placeholder="장소설명을 입력해 주세요."></textarea>
+              <textarea id="spotExp" name="spotExp" rows="4" cols="10" placeholder="장소설명을 입력해 주세요."></textarea>
             </div>
             <button type="submit" class="register">등록</button>
             <button class="modal-close">닫기</button>

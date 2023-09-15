@@ -1,21 +1,13 @@
 class GisLayer {
     static map = null;
     static manualFlag = false;
+    static currentCoords = {
+        lon: null,
+        lat: null
+    }
 
     static setMap(map) {
         this.map = map;
-    }
-
-    static layerCheckHandler(target) {
-        if (target === "MANUAL") {
-            if ($("#chk"+target).is(':checked')) {
-                this.manualFlag = true;
-            } else {
-                $(".bottom-alert").hide();
-                this.manualFlag = false;
-                this.removeLayer("pin", "pin_marker")
-            }
-        }
     }
 
     static removeLayer(source, target) {
