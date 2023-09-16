@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+register
+  <form action="/user/join" method="post">
+    <p>
+      <label>유저이름</label>
+      <input type="text" name="name">
+    </p>
+    <p>
+      <label>이메일</label>
+      <input type="text" name="email">
+    </p>
+    <p>
+      <label>닉네임</label>
+      <input type="text" name="nickname">
+    </p>
+    <p>
+      <label>비밀번호</label>
+      <input type="password" name="password">
+    </p>
+    <p>
+      <label>자기소개</label>
+      <textarea name="intro" placeholder="자신을 소개해보세요."></textarea>
+    </p>
+    <button type="submit">등록</button>
+  </form>
+</body>
+</html>

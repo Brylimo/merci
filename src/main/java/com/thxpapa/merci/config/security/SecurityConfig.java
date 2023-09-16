@@ -19,6 +19,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -39,18 +41,19 @@ public class SecurityConfig {
     @Order(SecurityProperties.BASIC_AUTH_ORDER)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeRequests->
                         authorizeRequests
-                                .requestMatchers("/login", "/api/**").permitAll()
+                                .requestMatchers("/login", "/register", "/user/**", "/api/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
-                        //.loginPage("/login")
+                        .loginPage("/login")
                         .defaultSuccessUrl("/geo/map", true)
-                        //.failureUrl("/login")
+                        .failureUrl("/login")
                         .usernameParameter("userId")
                         .passwordParameter("pwd")
-                        //.loginProcessingUrl("/login")
+                        .loginProcessingUrl("/login")
                         .permitAll()
                 )
                 .logout((logoutConfig)->
@@ -62,12 +65,12 @@ public class SecurityConfig {
                 )*/
                 .exceptionHandling(exceptionHandlingConfig->
                         exceptionHandlingConfig
-                                /*.authenticationEntryPoint(new AuthenticationEntryPoint() {
+                                .authenticationEntryPoint(new AuthenticationEntryPoint() {
                                     @Override
                                     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                                         response.sendRedirect("/login");
                                     }
-                                })*/
+                                })
                                 .accessDeniedHandler(new AccessDeniedHandler() {
                                     @Override
                                     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
@@ -79,8 +82,8 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /*@Bean
-    PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }*/
+    @Bean
+    public PasswordEncoder passwordEncoder() { /*return PasswordEncoderFactories.createDelegatingPasswordEncoder();*/ return NoOpPasswordEncoder.getInstance(); }
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {

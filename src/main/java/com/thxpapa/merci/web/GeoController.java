@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping(value = "/geo")
-public class GisController {
+public class GeoController {
 
     @GetMapping("/map")
     public String map(Model model) {
