@@ -1,6 +1,6 @@
 package com.thxpapa.merci.domain.user;
 
-import com.thxpapa.merci.domain.gis.Spot;
+import com.thxpapa.merci.domain.geo.Spot;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;

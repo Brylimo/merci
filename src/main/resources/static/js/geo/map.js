@@ -14,7 +14,7 @@ $(() => {
     });
 
     // register map
-    GisLayer.setMap(map);
+    GeoLayer.setMap(map);
     executeRealTimeLocation();
 
     // bottom alert event handling
@@ -24,7 +24,7 @@ $(() => {
     });
 
     $(".bottom-alert .no").on("click", () => {
-        GisLayer.removeLayer("red_pin", "pin_red_marker")
+        GeoLayer.removeLayer("red_pin", "pin_red_marker")
         $(".bottom-alert").hide();
     });
 
@@ -33,14 +33,14 @@ $(() => {
        const search = $("#search-location").val();
 
         $.ajax({
-            url: "/gis/geo/cvtquerytocoord.json",
+            url: "/api/geo/cvtquerytocoord.json",
             type: "GET",
             data: {
                 query: search
             },
             success: (res) => {
                 res.forEach((item) => {
-                    GisLayer.pinBlueMarker(item.x, item.y);
+                    GeoLayer.pinBlueMarker(item.x, item.y);
                 })
             },
             error: (error) => {
@@ -54,8 +54,8 @@ $(() => {
     map.on("click", (event) => {
         const pixel = event.pixel;
 
-        if (GisLayer.manualFlag) {  // manual location register
-            GisLayer.removeLayer("red_pin", "pin_red_marker")
+        if (GeoLayer.manualFlag) {  // manual location register
+            GeoLayer.removeLayer("red_pin", "pin_red_marker")
 
             const coordinate = ol.proj.transform(map.getCoordinateFromPixel(pixel), 'EPSG:3857', 'EPSG:4326');
 
@@ -63,10 +63,10 @@ $(() => {
             const lat = coordinate[1];
 
             // draw marker
-            GisLayer.pinRedMarker(lon, lat);
+            GeoLayer.pinRedMarker(lon, lat);
 
             $.ajax({
-                url: "/gis/geo/cvtcoordtoaddr.json",
+                url: "/api/geo/cvtcoordtoaddr.json",
                 type: "GET",
                 data: {
                     lon: lon,
@@ -91,20 +91,20 @@ $(() => {
 const layerCheckHandler = (target) => {
     if (target === "MANUAL") {
         if ($("#chk"+target).is(':checked')) {
-            GisLayer.manualFlag = true;
+            GeoLayer.manualFlag = true;
         } else {
             $(".bottom-alert").hide();
-            GisLayer.manualFlag = false;
-            GisLayer.removeLayer("red_pin", "pin_red_marker");
+            GeoLayer.manualFlag = false;
+            GeoLayer.removeLayer("red_pin", "pin_red_marker");
         }
     } else if (target === "CURRENT") {
         if ($("#chk"+target).is(':checked')) {
-            const lon = GisLayer.currentCoords.lon;
-            const lat = GisLayer.currentCoords.lat;
+            const lon = GeoLayer.currentCoords.lon;
+            const lat = GeoLayer.currentCoords.lat;
 
             if (lon && lat) {
                 $.ajax({
-                    url: "/gis/geo/cvtcoordtoaddr.json",
+                    url: "/api/geo/cvtcoordtoaddr.json",
                     type: "GET",
                     data: {
                         lon: lon,
@@ -136,10 +136,11 @@ const layerCheckHandler = (target) => {
 const watchPositionHandler = (rtData) => {
     const { coords } = rtData;
 
-    GisLayer.currentCoords.lon = coords.longitude;
-    GisLayer.currentCoords.lat = coords.latitude;
+    GeoLayer.currentCoords.lon = coords.longitude;
+    GeoLayer.currentCoords.lat = coords.latitude;
 
-    GisLayer.pinCurrentPoint(coords.longitude, coords.latitude);
+    GeoLayer.removeLayer("current_point", "current_point_marker");
+    GeoLayer.pinCurrentPoint(coords.longitude, coords.latitude);
 }
 
 const executeRealTimeLocation = () => {

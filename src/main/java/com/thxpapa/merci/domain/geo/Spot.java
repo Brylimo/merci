@@ -1,5 +1,7 @@
-package com.thxpapa.merci.domain.gis;
+package com.thxpapa.merci.domain.geo;
 
+import com.thxpapa.merci.domain.file.MerciFile;
+import com.thxpapa.merci.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -10,29 +12,37 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name="album", schema="datamart")
+@Table(name="spot", schema="datamart")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = "albumUid", callSuper=false)
+@EqualsAndHashCode(of = "spotUid", callSuper=false)
 @ToString
-public class Album {
+public class Spot {
     @Id
-    @Column(name="album_uid")
+    @Column(name="spot_uid")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int albumUid;
+    private int spotUid;
 
-    @Comment("앨범이름")
+    @Comment("장소이름")
     @Column(name="name", length = 45, nullable = true)
     private String name;
 
-    @Comment("좋아요 개수")
-    @Column(name="like_cnt")
-    @ColumnDefault("0")
-    private int likeCnt;
+    @Comment("장소")
+    @Column(name="loc", length = 40, nullable = false)
+    private String loc;
 
     @Lob
-    @Comment("앨범설명")
+    @Comment("장소설명")
     @Column(name="exp", nullable = true)
     private String exp;
+
+    @Comment("경도")
+    @Column(name="lon")
+    private Double lon;
+
+    @Lob
+    @Comment("위도")
+    @Column(name="lat")
+    private Double lat;
 
     @Comment("상태정보")
     @Column(name="status_cd", length = 3, nullable = false)
@@ -50,14 +60,21 @@ public class Album {
     private LocalDateTime modDt;
 
     @ManyToOne
-    @JoinColumn(name="spotId")
-    private Spot spot;
+    @JoinColumn(name="userId")
+    private User user;
+
+    @OneToOne
+    @JoinColumn(name="merciFileId")
+    private MerciFile merciFile;
 
     @Builder
-    public Album(String name, int likeCnt, String exp, String statusCd) {
+    public Spot(String name, String loc, String exp, Double lon, Double lat, MerciFile merciFile, String statusCd) {
         this.name = name;
-        this.likeCnt = likeCnt;
+        this.loc = loc;
         this.exp = exp;
+        this.lon = lon;
+        this.lat = lat;
         this.statusCd = statusCd;
+        this.merciFile = merciFile;
     }
 }

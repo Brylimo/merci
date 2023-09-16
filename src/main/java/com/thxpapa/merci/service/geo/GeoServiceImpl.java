@@ -1,4 +1,4 @@
-package com.thxpapa.merci.service.gis;
+package com.thxpapa.merci.service.geo;
 
 import com.thxpapa.merci.util.KakaoUtil;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-class GisLayer {
+class GeoLayer {
     static map = null;
     static manualFlag = false;
     static currentCoords = {
@@ -35,7 +35,7 @@ class GisLayer {
                 anchor: [10, 10],
                 anchorXUnits: 'pixels',
                 anchorYUnits: 'pixels',
-                src: '/img/marker/marker_red.png'
+                src: '/images/marker/marker_red.png'
             }))
         });
         feature.setStyle(iconStyle);
@@ -63,7 +63,7 @@ class GisLayer {
                 anchor: [10, 10],
                 anchorXUnits: 'pixels',
                 anchorYUnits: 'pixels',
-                src: '/img/marker/marker_blue.png'
+                src: '/images/marker/marker_blue.png'
             }))
         });
         feature.setStyle(iconStyle);

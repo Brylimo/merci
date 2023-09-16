@@ -1,10 +1,10 @@
-package com.thxpapa.merci.service.gis;
+package com.thxpapa.merci.service.geo;
 
 import com.thxpapa.merci.domain.file.MerciFile;
-import com.thxpapa.merci.domain.gis.Spot;
+import com.thxpapa.merci.domain.geo.Spot;
 import com.thxpapa.merci.dto.SpotRegisterRequestDto;
 import com.thxpapa.merci.repository.fileRepository.MerciFileRepository;
-import com.thxpapa.merci.repository.gisRepository.SpotRepository;
+import com.thxpapa.merci.repository.geoRepository.SpotRepository;
 import com.thxpapa.merci.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

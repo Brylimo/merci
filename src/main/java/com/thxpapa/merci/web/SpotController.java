@@ -1,8 +1,8 @@
 package com.thxpapa.merci.web;
 
-import com.thxpapa.merci.domain.gis.Spot;
+import com.thxpapa.merci.domain.geo.Spot;
 import com.thxpapa.merci.dto.SpotRegisterRequestDto;
-import com.thxpapa.merci.service.gis.SpotService;
+import com.thxpapa.merci.service.geo.SpotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -19,7 +19,7 @@ public class SpotController {
 
     @GetMapping("/item/{spotId}")
     public String spotItem(@PathVariable Integer spotId) {
-        return "gis/spot";
+        return "geo/spot";
     }
 
     @PostMapping("/register")

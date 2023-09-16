@@ -1,4 +1,4 @@
-package com.thxpapa.merci.service.gis;
+package com.thxpapa.merci.service.geo;
 
 import java.util.List;
 

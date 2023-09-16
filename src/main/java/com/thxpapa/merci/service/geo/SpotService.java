@@ -1,6 +1,6 @@
-package com.thxpapa.merci.service.gis;
+package com.thxpapa.merci.service.geo;
 
-import com.thxpapa.merci.domain.gis.Spot;
+import com.thxpapa.merci.domain.geo.Spot;
 import com.thxpapa.merci.dto.SpotRegisterRequestDto;
 
 public interface SpotService {
