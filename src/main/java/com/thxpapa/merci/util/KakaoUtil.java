@@ -16,7 +16,9 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -108,6 +110,40 @@ public class KakaoUtil {
             return null;
         } catch (Exception e) {
             log.error("cvtKeywordToCoord error occurred!");
+            return null;
+        }
+    }
+
+    public Map<String, Object> searchCategory(String categoryGroupCode, String lon, String lat, Integer page) {
+        if (categoryGroupCode == null || lon == null || lat == null || page == null) return null;
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", aKey);
+
+            HttpEntity<?> httpEntity = new HttpEntity<>(headers);
+            UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(kakaoUrl+"/v2/local/search/category.json")
+                    .queryParam("x", lon).queryParam("y", lat).queryParam("size", 15).queryParam("page", page).queryParam("category_group_code", categoryGroupCode).build();
+            ResponseEntity<String> response = restTemplate.exchange(uriComponents.toString(), HttpMethod.GET, httpEntity, String.class);
+
+            if (response.getStatusCode().value() == 200) {
+                Map<String, Object> res = new HashMap<>();
+                JsonParser jsonParser = new JsonParser();
+
+                JsonObject body = (JsonObject) jsonParser.parse(response.getBody());
+                JsonObject meta = (JsonObject) body.get("meta");
+                JsonArray documents = (JsonArray) body.get("documents");
+
+                res.put("isEnd", Boolean.parseBoolean(String.valueOf(meta.get("is_end"))));
+                res.put("documents", Arrays.asList(new ObjectMapper().readValue(documents.toString(), Object[].class)));
+
+                return res;
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("searchCategory error occurred!");
             return null;
         }
     }

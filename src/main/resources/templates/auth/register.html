@@ -3,11 +3,13 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>회원가입</title>
+  <script th:src="@{/js/jquery/jQuery-2.1.4.min.js}"></script>
+  <script th:src="@{/js/jquery/jquery-ui.js}"></script>
 </head>
 <body>
 register
-  <form action="/user/join" method="post">
+  <form id="joinForm">
     <p>
       <label>이름</label>
       <input type="text" name="name">
@@ -28,7 +30,9 @@ register
       <label>자기소개</label>
       <textarea name="intro" placeholder="자신을 소개해보세요."></textarea>
     </p>
-    <button type="submit">등록</button>
+    <button type="submit" class="registerBtn">등록</button>
   </form>
+
+  <script th:src="@{/js/auth/register.js}"></script>
 </body>
 </html>
