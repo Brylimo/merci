@@ -1,7 +1,7 @@
 package com.thxpapa.merci.domain.geo;
 
 import com.thxpapa.merci.domain.file.MerciFile;
-import com.thxpapa.merci.domain.user.User;
+import com.thxpapa.merci.domain.user.MerciUser;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -39,7 +39,6 @@ public class Spot {
     @Column(name="lon")
     private Double lon;
 
-    @Lob
     @Comment("위도")
     @Column(name="lat")
     private Double lat;
@@ -60,8 +59,8 @@ public class Spot {
     private LocalDateTime modDt;
 
     @ManyToOne
-    @JoinColumn(name="userId")
-    private User user;
+    @JoinColumn(name="merciUserId")
+    private MerciUser merciUser;
 
     @OneToOne
     @JoinColumn(name="merciFileId")

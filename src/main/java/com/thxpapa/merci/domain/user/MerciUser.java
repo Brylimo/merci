@@ -12,17 +12,17 @@ import java.util.List;
 
 @Getter
 @Entity
-@Table(name="user", schema="datamart")
+@Table(name="merci_user", schema="datamart")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = "userUid", callSuper=false)
+@EqualsAndHashCode(of = "merciUserUid", callSuper=false)
 @ToString
-public class User {
+public class MerciUser {
     @Id
-    @Column(name="user_uid")
+    @Column(name="merci_user_uid")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int userUid;
+    private int merciUserUid;
 
-    @Comment("유저이름")
+    @Comment("이름")
     @Column(name="name", length = 45, nullable = false)
     private String name;
 
@@ -30,9 +30,9 @@ public class User {
     @Column(name="email", length = 45, nullable = false)
     private String email;
 
-    @Comment("유저닉네임")
-    @Column(name="nickname", length = 45, nullable = false)
-    private String nickname;
+    @Comment("유저이름")
+    @Column(name="username", length = 45, nullable = false)
+    private String username;
 
     @Comment("비밀번호")
     @Column(name="password", length = 255, nullable = true)
@@ -58,14 +58,14 @@ public class User {
     @Column(name="mod_dt")
     private LocalDateTime modDt;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "merciUser")
     private List<Spot> spots = new ArrayList<Spot>();
 
     @Builder
-    public User(String name, String email, String nickname, String password, String intro, String statusCd) {
+    public MerciUser(String name, String email, String username, String password, String intro, String statusCd) {
         this.name = name;
         this.email = email;
-        this.nickname = nickname;
+        this.username = username;
         this.password = password;
         this.intro = intro;
         this.statusCd = statusCd;
