@@ -1,4 +1,8 @@
 $(() => {
+    let idleTime = 0;
+    const idleTimeout = 300;
+    const zoomThreshold = 16;
+
     // create map
     const map = new ol.Map({
        target: 'vMap',
@@ -16,6 +20,18 @@ $(() => {
     // register map
     GeoLayer.setMap(map);
     executeRealTimeLocation();
+
+    $(document).on('wheel click', () => {
+        const zoom = map.getView().getZoom();
+
+        if (zoom < zoomThreshold) {
+            GeoLayer.removeLayer("temp_point", "temp_point_marker");
+            GeoLayer.fetchedInfraList = [];
+        }
+
+        GeoLayer.infraFlag = false;
+        idleTime = 0;
+    });
 
     // bottom alert event handling
     $(".bottom-alert .yes").on("click", () => {
@@ -86,6 +102,55 @@ $(() => {
             });
         }
     });
+
+    // idle detecting timer
+    setInterval(() => {
+        idleTime += 100;
+
+        const zoom = map.getView().getZoom();
+
+        // meaningful idle time
+        if (!GeoLayer.infraFlag && zoom >= zoomThreshold && idleTime >= idleTimeout) {
+
+            GeoLayer.infraFlag = true;
+
+            const [ minLon, minLat, maxLon, maxLat ] = map.getView().calculateExtent();
+
+            const centerLon = (minLon + maxLon) / 2;
+            const centerLat = (minLat + maxLat) / 2;
+
+            const radius = GeoLayer.getDistance(minLat, minLon, centerLat, centerLon);
+            const coordinate = ol.proj.transform([centerLon, centerLat], 'EPSG:3857', 'EPSG:4326');
+
+            $.ajax({
+                url: "/api/geo/fetchInfra.json",
+                type: "GET",
+                data: {
+                    lon: coordinate[0],
+                    lat: coordinate[1],
+                    rad: radius
+                },
+                success: (res) => {
+
+                    let returnArr = [];
+
+                    const diff = res.filter(obj => !GeoLayer.fetchedInfraList.includes(obj.id));
+
+                    diff.forEach(infra => {
+                        returnArr.push(infra.id);
+                        GeoLayer.pinTempPoint(infra.x, infra.y);
+                    });
+
+                    GeoLayer.fetchedInfraList.push(...returnArr);
+
+                },
+                error: (error) => {
+                    console.error(error.code);
+                }
+            });
+        }
+
+    }, 100);
 });
 
 const layerCheckHandler = (target) => {

@@ -40,14 +40,14 @@ public class GeoServiceImpl implements GeoService {
     @Async
     @Transactional
     @Override
-    public CompletableFuture<List<Object>> searchKakaoCategory(String categoryCode, String lon, String lat) {
+    public CompletableFuture<List<Object>> searchKakaoCategory(String categoryCode, String lon, String lat, String rad) {
         CompletableFuture<List<Object>> resultFuture = new CompletableFuture<>();
         int startPage = 1;
         List<Object> list = new ArrayList<>();
 
         try {
             while (true) {
-                Map<String, Object> res = kakaoUtil.searchCategory(categoryCode, lon, lat, startPage);
+                Map<String, Object> res = kakaoUtil.searchCategory(categoryCode, lon, lat, rad, startPage);
                 list.addAll((List) res.get("documents"));
 
                 if ((Boolean) res.get("isEnd")) break;

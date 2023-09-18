@@ -69,13 +69,13 @@ public class ApiController {
     }
 
     @GetMapping("/geo/fetchInfra.json")
-    public CompletableFuture<ResponseEntity<Object>> fetchInfra(@RequestParam("lon") String lon, @RequestParam("lat") String lat) {
+    public CompletableFuture<ResponseEntity<Object>> fetchInfra(@RequestParam("lon") String lon, @RequestParam("lat") String lat, @RequestParam("rad") String rad) {
         log.debug("fetchInfra starts!");
 
         List<CompletableFuture<List<Object>>> categorySearchFutures = new ArrayList<>();
 
         for (String code : kakaoCategoryGroupCodeList) {
-            categorySearchFutures.add(geoService.searchKakaoCategory(code, lon, lat));
+            categorySearchFutures.add(geoService.searchKakaoCategory(code, lon, lat, rad));
         }
 
         CompletableFuture<Void> allOf = CompletableFuture.allOf(

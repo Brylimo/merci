@@ -114,8 +114,12 @@ public class KakaoUtil {
         }
     }
 
-    public Map<String, Object> searchCategory(String categoryGroupCode, String lon, String lat, Integer page) {
-        if (categoryGroupCode == null || lon == null || lat == null || page == null) return null;
+    public Map<String, Object> searchCategory(String categoryGroupCode, String lon, String lat, String rad, Integer page) {
+        if (categoryGroupCode == null || lon == null || lat == null || rad == null || page == null) return null;
+
+        int radius = 19999;
+        try { radius = Integer.parseInt(rad); } catch (NumberFormatException e) {}
+
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -124,7 +128,7 @@ public class KakaoUtil {
 
             HttpEntity<?> httpEntity = new HttpEntity<>(headers);
             UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(kakaoUrl+"/v2/local/search/category.json")
-                    .queryParam("x", lon).queryParam("y", lat).queryParam("size", 15).queryParam("page", page).queryParam("category_group_code", categoryGroupCode).build();
+                    .queryParam("x", lon).queryParam("y", lat).queryParam("radius", radius).queryParam("size", 15).queryParam("page", page).queryParam("category_group_code", categoryGroupCode).build();
             ResponseEntity<String> response = restTemplate.exchange(uriComponents.toString(), HttpMethod.GET, httpEntity, String.class);
 
             if (response.getStatusCode().value() == 200) {
