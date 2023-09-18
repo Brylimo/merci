@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -18,9 +18,6 @@ import java.util.Map;
 public class GeoServiceImpl implements GeoService {
 
     private final KakaoUtil kakaoUtil;
-    private final List<String> kakaoCategoryGroupCodeList = new ArrayList<>(
-            Arrays.asList("MT1", "CS2", "PS3", "SC4", "AC5", "PK6", "OL7", "SW8", "BK9", "CT1", "AG2", "PO3", "AT4", "AD5", "FD6", "CE7", "HP8", "PM9")
-    );
 
     @Override
     public Object cvtCoordToAddr(String lon, String lat) {
@@ -43,30 +40,26 @@ public class GeoServiceImpl implements GeoService {
     @Async
     @Transactional
     @Override
-    public List<Object> searchKakaoCategory(String categoryCode, String lon, String lat) {
+    public CompletableFuture<List<Object>> searchKakaoCategory(String categoryCode, String lon, String lat) {
+        CompletableFuture<List<Object>> resultFuture = new CompletableFuture<>();
         int startPage = 1;
         List<Object> list = new ArrayList<>();
 
-        while (true) {
-            log.debug(categoryCode);
-            Map<String, Object> res = kakaoUtil.searchCategory(categoryCode, lon, lat, startPage);
-            list.addAll((List) res.get("documents"));
+        try {
+            while (true) {
+                Map<String, Object> res = kakaoUtil.searchCategory(categoryCode, lon, lat, startPage);
+                list.addAll((List) res.get("documents"));
 
-            if ((Boolean) res.get("isEnd")) break;
+                if ((Boolean) res.get("isEnd")) break;
 
-            startPage++;
+                startPage++;
+            }
+
+            resultFuture.complete(list);
+        } catch (Exception e) {
+            resultFuture.completeExceptionally(e);
         }
 
-        return list ;
-    }
-
-    public List<Object> fetchInfra(String lon, String lat) {
-        List<Object> response = new ArrayList<>();
-
-        for (String code : kakaoCategoryGroupCodeList) {
-            response.addAll(searchKakaoCategory(code, lon, lat));
-        }
-
-        return response;
+        return resultFuture;
     }
 }
