@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <body>
     <header class="header">
         <h1 class="logo">
@@ -8,6 +8,11 @@
             MERCI
         </h1>
         <div class="header-left">
+            <ul>
+                <li sec:authorize="isAnonymous()"><a th:href="@{/login}">로그인</a></li>
+                <li sec:authorize="isAnonymous()"><a th:href="@{/register}">회원가입</a></li>
+                <li sec:authorize="isAuthenticated()"><a th:href="@{/auth/logout}">로그아웃</a></li>
+            </ul>
         </div>
     </header>
 </body>
