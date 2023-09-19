@@ -58,7 +58,7 @@ public class MerciUser {
     @Column(name="mod_dt")
     private LocalDateTime modDt;
 
-    @OneToMany(mappedBy = "merciUser")
+    @OneToMany(mappedBy = "merciUser", fetch=FetchType.EAGER)
     private List<Spot> spots = new ArrayList<Spot>();
 
     @Builder

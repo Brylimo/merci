@@ -1,5 +1,6 @@
 package com.thxpapa.merci.config.security;
 
+import com.thxpapa.merci.security.provider.MerciAuthenticationProvider;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,7 +19,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -33,8 +33,6 @@ import java.io.IOException;
 @ConditionalOnDefaultWebSecurity
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class SecurityConfig {
-
-    private final UserDetailsService userDetailsService;
 
     @Bean
     @Order(SecurityProperties.BASIC_AUTH_ORDER)
@@ -58,10 +56,6 @@ public class SecurityConfig {
                 .logout((logoutConfig)->
                         logoutConfig.logoutSuccessUrl("/login")
                 )
-                /*.rememberMe(rememberMeConf ->
-                        rememberMeConf
-                                .userDetailsService(userDetailsService)
-                )*/
                 .exceptionHandling(exceptionHandlingConfig->
                         exceptionHandlingConfig
                                 .authenticationEntryPoint(new AuthenticationEntryPoint() {
@@ -92,5 +86,10 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public MerciAuthenticationProvider merciAuthenticationProvider() {
+        return new MerciAuthenticationProvider();
     }
 }

@@ -1,4 +1,4 @@
-package com.thxpapa.merci.service.user;
+package com.thxpapa.merci.security.service;
 
 import com.thxpapa.merci.domain.user.MerciUser;
 import com.thxpapa.merci.domain.user.SecurityUser;
