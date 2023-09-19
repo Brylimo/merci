@@ -6,11 +6,18 @@
   <link rel="stylesheet" th:href="@{/css/map.css}">
   <link rel="stylesheet" th:href="@{/css/layout.css}">
   <link rel="stylesheet" th:href="@{/css/modal.css}">
+  <link rel="stylesheet" th:href="@{/css/overlay.css}">
 </head>
 <body>
 <div class="main-wrapper">
-  <th:block th:include="common/header"></th:block>
-  <th:block th:include="common/sidebar"></th:block>
+  <!-- common -->
+  <div th:include="common/header"></div>
+  <div th:include="common/sidebar"></div>
+  <!--overlay-->
+  <div th:include="overlay/overlay"></div>
+  <div th:include="overlay/header/infra_header"></div>
+  <div th:include="overlay/content/infra_content"></div>
+
   <section class="content">
     <div class="layer_modal_wrap">
       <div class="layer_modal_con">
@@ -55,6 +62,11 @@
       </div>
     </div>
 
+    <!-- class js import -->
+    <script th:src="@{/js/geo/class/OverlayInfo.js}"></script>
+    <script th:src="@{/js/geo/class/GeoLayer.js}"></script>
+
+    <!-- js import -->
     <script th:src="@{/js/geo/map.js}"></script>
     <script th:src="@{/js/util/modal.js}"></script>
 

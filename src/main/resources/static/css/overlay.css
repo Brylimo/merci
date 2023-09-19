@@ -1,0 +1,15 @@
+.overlay-wrapper {
+    display: none;
+}
+
+.overlay-header-wrapper {
+    display: none;
+}
+
+.overlay-content-wrapper {
+    display: none;
+}
+
+.overlay-container {
+    min-width: 20rem;
+}

@@ -1,7 +1,7 @@
 $(() => {
     let idleTime = 0;
     const idleTimeout = 300;
-    const zoomThreshold = 16;
+    const zoomThreshold = 15.9;
 
     // create map
     const map = new ol.Map({
@@ -25,7 +25,8 @@ $(() => {
         const zoom = map.getView().getZoom();
 
         if (zoom < zoomThreshold) {
-            GeoLayer.removeLayer("temp_point", "temp_point_marker");
+            GeoLayer.removeLayer("layer_name", "infra_point_marker");
+            GeoLayer.removeAllOverlays("infra");
             GeoLayer.fetchedInfraList = [];
         }
 
@@ -40,7 +41,7 @@ $(() => {
     });
 
     $(".bottom-alert .no").on("click", () => {
-        GeoLayer.removeLayer("red_pin", "pin_red_marker")
+        GeoLayer.removeLayer("layer_name", "pin_red_marker")
         $(".bottom-alert").hide();
     });
 
@@ -70,8 +71,30 @@ $(() => {
     map.on("click", (event) => {
         const pixel = event.pixel;
 
+        GeoLayer.removeAllOverlays("infra");
+        map.forEachFeatureAtPixel(pixel, (feature, layer) => {
+
+            if (layer.get("layer_name") === "infra_point_marker") {
+                const infraData = feature.get("data");
+                const infraOverlay = GeoLayer.createOverlay(new OverlayInfo("infra", infraData));
+
+                if (infraOverlay) {
+                    const result = new ol.Overlay({
+                       id: infraData.id,
+                       element: infraOverlay,
+                       offset: [0, -70],
+                       position: ol.proj.transform([infraData.x, infraData.y], 'EPSG:4326', "EPSG:900913")
+                    });
+
+                    GeoLayer.removeOverlay(map.getOverlayById(infraData.id));
+                    GeoLayer.addOverlay(result);
+                }
+            }
+
+        });
+
         if (GeoLayer.manualFlag) {  // manual location register
-            GeoLayer.removeLayer("red_pin", "pin_red_marker")
+            GeoLayer.removeLayer("layer_name", "pin_red_marker")
 
             const coordinate = ol.proj.transform(map.getCoordinateFromPixel(pixel), 'EPSG:3857', 'EPSG:4326');
 
@@ -138,7 +161,7 @@ $(() => {
 
                     diff.forEach(infra => {
                         returnArr.push(infra.id);
-                        GeoLayer.pinTempPoint(infra.x, infra.y);
+                        GeoLayer.pinInfraPoint(infra, infra.x, infra.y);
                     });
 
                     GeoLayer.fetchedInfraList.push(...returnArr);
@@ -160,7 +183,7 @@ const layerCheckHandler = (target) => {
         } else {
             $(".bottom-alert").hide();
             GeoLayer.manualFlag = false;
-            GeoLayer.removeLayer("red_pin", "pin_red_marker");
+            GeoLayer.removeLayer("layer_name", "pin_red_marker");
         }
     } else if (target === "CURRENT") {
         if ($("#chk"+target).is(':checked')) {
@@ -204,7 +227,7 @@ const watchPositionHandler = (rtData) => {
     GeoLayer.currentCoords.lon = coords.longitude;
     GeoLayer.currentCoords.lat = coords.latitude;
 
-    GeoLayer.removeLayer("current_point", "current_point_marker");
+    GeoLayer.removeLayer("layer_name", "current_point_marker");
     GeoLayer.pinCurrentPoint(coords.longitude, coords.latitude);
 }
 
