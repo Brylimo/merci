@@ -41,27 +41,27 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeRequests->
                         authorizeRequests
-                                .requestMatchers("/login", "/register", "/user/**", "/api/**").permitAll()
+                                .requestMatchers("/auth/**", "/user/**", "/api/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
-                        .loginPage("/login")
+                        .loginPage("/auth/login")
                         .defaultSuccessUrl("/geo/map", true)
-                        .failureUrl("/login")
+                        .failureUrl("/auth/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .loginProcessingUrl("/login")
+                        .loginProcessingUrl("/auth/login")
                         .permitAll()
                 )
                 .logout((logoutConfig)->
-                        logoutConfig.logoutSuccessUrl("/login")
+                        logoutConfig.logoutSuccessUrl("/auth/login")
                 )
                 .exceptionHandling(exceptionHandlingConfig->
                         exceptionHandlingConfig
                                 .authenticationEntryPoint(new AuthenticationEntryPoint() {
                                     @Override
                                     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-                                        response.sendRedirect("/login");
+                                        response.sendRedirect("/auth/login");
                                     }
                                 })
                                 .accessDeniedHandler(new AccessDeniedHandler() {

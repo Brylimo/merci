@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 <head>
     <meta charset="UTF-8">
     <title>로그인</title>
 </head>
 <body>
-    login
-    <form method="post" th:action="@{/login}">
-        <input type="text" name="email" placeholder="이메일을 입력해주세요" required="required" autofocus="autofocus">
-        <input type="password" name="password" placeholder="비밀번호를 입력해주세요" required="required">
-        <button type="submit">로그인</button>
-    </form>
+    <div style="position: absolute; top: 6rem;">
+        login
+        <form method="post" th:action="@{/auth/login}">
+            <input type="text" name="email" placeholder="이메일을 입력해주세요" required="required" autofocus="autofocus">
+            <input type="password" name="password" placeholder="비밀번호를 입력해주세요" required="required">
+            <button type="submit">로그인</button>
+        </form>
+    </div>
 </body>
 </html>

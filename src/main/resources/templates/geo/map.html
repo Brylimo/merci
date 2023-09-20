@@ -3,6 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
+  <link rel="stylesheet" th:href="@{/js/ol/ol.css}">
   <link rel="stylesheet" th:href="@{/css/map.css}">
   <link rel="stylesheet" th:href="@{/css/layout.css}">
   <link rel="stylesheet" th:href="@{/css/modal.css}">
@@ -67,6 +68,7 @@
     <script th:src="@{/js/geo/class/GeoLayer.js}"></script>
 
     <!-- js import -->
+    <script th:src="@{/js/ol/dist/ol.js}"></script>
     <script th:src="@{/js/geo/map.js}"></script>
     <script th:src="@{/js/util/modal.js}"></script>
 

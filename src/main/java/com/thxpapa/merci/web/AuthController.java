@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping(value = "/auth")
 public class AuthController {
 
+    @GetMapping("/login")
+    public String login() {
+        return "/auth/login";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpServletRequest req, HttpServletResponse res) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -25,6 +30,12 @@ public class AuthController {
             new SecurityContextLogoutHandler().logout(req, res, auth);
         }
 
-        return "redirect:/login";
+        return "redirect:/auth/login";
     }
+
+    @GetMapping("/register")
+    public String register() {
+        return "/auth/register";
+    }
+
 }
