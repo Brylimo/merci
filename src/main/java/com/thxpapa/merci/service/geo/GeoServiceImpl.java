@@ -1,6 +1,7 @@
 package com.thxpapa.merci.service.geo;
 
 import com.thxpapa.merci.util.KakaoUtil;
+import com.thxpapa.merci.util.TagoUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -18,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class GeoServiceImpl implements GeoService {
 
     private final KakaoUtil kakaoUtil;
+    private final TagoUtil tagoUtil;
 
     @Override
     public Object cvtCoordToAddr(String lon, String lat) {
@@ -61,5 +63,11 @@ public class GeoServiceImpl implements GeoService {
         }
 
         return resultFuture;
+    }
+
+    @Override
+    public List<Object> fetchSttnList(String lon, String lat) {
+        List<Object> sttnList = tagoUtil.getCrdntPrxmtSttnList(lon, lat);
+        return sttnList;
     }
 }

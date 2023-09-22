@@ -5,7 +5,6 @@ import com.thxpapa.merci.dto.ErrorResponse;
 import com.thxpapa.merci.dto.UserRegisterRequestDto;
 import com.thxpapa.merci.service.geo.GeoService;
 import com.thxpapa.merci.service.user.MerciUserService;
-import com.thxpapa.merci.util.TagoUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,6 @@ public class ApiController {
 
     private final GeoService geoService;
     private final MerciUserService merciUserService;
-    private final TagoUtil tagoUtil;
 
     /* MT1 대형마트 / CS2 편의점 / PS3 어린이집, 유치원 / PS3 어린이집, 유치원 / SC4 학교 / AC5 학원 / PK6 주차장 / OL7 주유소, 충전소 / SW8 지하철역
     * BK9 은행 / CT1 문화시설 / AG2 중개업소 / PO3 공공기관 / AT4 관광명소 / AD5 숙박 / FD6 음식점 / CE7 카페 / HP8 병원 / PM9 약국 */
@@ -106,10 +104,22 @@ public class ApiController {
         });
     }
 
-    // bus rest api call
-    @GetMapping("/practice.json")
-    public void bus(@RequestParam("lon") String lon, @RequestParam("lat") String lat) {
-        tagoUtil.getCrdntPrxmtSttnList(lon, lat);
+    // station rest api call
+    @GetMapping("geo/fetchSttnList.json")
+    public ResponseEntity<Object> fetchSttnList(@RequestParam("lon") String lon, @RequestParam("lat") String lat) {
+        try {
+            List<Object> res = geoService.fetchSttnList(lon, lat);
+
+            if (res == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("can't find station data"));
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(res);
+        } catch (Exception e) {
+            log.debug("fetchSttnList error occurred!");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
+        }
     }
 
     // auth rest api call
