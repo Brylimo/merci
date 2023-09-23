@@ -2,7 +2,9 @@ class GeoLayer {
     static map = null;
     static manualFlag = false;
     static infraFlag = false;
+    static sttnFlag = false;
     static fetchedInfraList = [];
+    static fetchedSttnList = [];
 
     static currentCoords = {
         lon: null,

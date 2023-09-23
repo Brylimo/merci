@@ -104,7 +104,6 @@ public class ApiController {
         });
     }
 
-    // station rest api call
     @GetMapping("geo/fetchSttnList.json")
     public ResponseEntity<Object> fetchSttnList(@RequestParam("lon") String lon, @RequestParam("lat") String lat) {
         try {

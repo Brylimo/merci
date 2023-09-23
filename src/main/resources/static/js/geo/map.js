@@ -1,7 +1,8 @@
 $(() => {
     let idleTime = 0;
     const idleTimeout = 300;
-    const zoomThreshold = 15.9;
+    const infraZoomThreshold = 15.9;
+    const sttnZoomThreshold = 16.5;
 
     // create map
     const map = new ol.Map({
@@ -24,13 +25,19 @@ $(() => {
     $(document).on('wheel click', () => {
         const zoom = map.getView().getZoom();
 
-        if (zoom < zoomThreshold) {
+        if (zoom < infraZoomThreshold) {
             GeoLayer.removeLayer("layer_name", "infra_point_marker");
             GeoLayer.removeAllOverlays("infra");
             GeoLayer.fetchedInfraList = [];
         }
 
+        if (zoom < sttnZoomThreshold) {
+            GeoLayer.removeLayer("layer_name", "pin_blue_marker");
+            GeoLayer.fetchedSttnList = [];
+        }
+
         GeoLayer.infraFlag = false;
+        GeoLayer.sttnFlag = false;
         idleTime = 0;
     });
 
@@ -132,8 +139,8 @@ $(() => {
 
         const zoom = map.getView().getZoom();
 
-        // meaningful idle time
-        if (!GeoLayer.infraFlag && zoom >= zoomThreshold && idleTime >= idleTimeout) {
+        // meaningful idle time for infra
+        if (!GeoLayer.infraFlag && zoom >= infraZoomThreshold && idleTime >= idleTimeout) {
 
             GeoLayer.infraFlag = true;
 
@@ -145,6 +152,7 @@ $(() => {
             const radius = GeoLayer.getDistance(minLat, minLon, centerLat, centerLon);
             const coordinate = ol.proj.transform([centerLon, centerLat], 'EPSG:3857', 'EPSG:4326');
 
+            // infra
             $.ajax({
                 url: "/api/geo/fetchInfra.json",
                 type: "GET",
@@ -165,6 +173,43 @@ $(() => {
                     });
 
                     GeoLayer.fetchedInfraList.push(...returnArr);
+
+                },
+                error: (error) => {
+                    console.error(error.code);
+                }
+            });
+        }
+
+        // meaningful idle time for station
+        if (!GeoLayer.sttnFlag && zoom >= sttnZoomThreshold && idleTime >= idleTimeout) {
+            GeoLayer.sttnFlag = true;
+
+            const [ minLon, minLat, maxLon, maxLat ] = map.getView().calculateExtent();
+
+            const centerLon = (minLon + maxLon) / 2;
+            const centerLat = (minLat + maxLat) / 2;
+            const coordinate = ol.proj.transform([centerLon, centerLat], 'EPSG:3857', 'EPSG:4326');
+
+            // station
+            $.ajax({
+                url: "/api/geo/fetchSttnList.json",
+                type: "GET",
+                data: {
+                    lon: coordinate[0],
+                    lat: coordinate[1]
+                },
+                success: (res) => {
+                    let returnArr = [];
+
+                    const diff = res.filter(obj => !GeoLayer.fetchedSttnList.includes(obj["nodeid"]));
+
+                    diff.forEach(sttn => {
+                        returnArr.push(sttn["nodeid"]);
+                        GeoLayer.pinBlueMarker(sttn["gpslong"], sttn["gpslati"]);
+                    });
+
+                    GeoLayer.fetchedSttnList.push(...returnArr);
 
                 },
                 error: (error) => {
