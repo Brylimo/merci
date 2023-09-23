@@ -72,7 +72,7 @@ public class ApiController {
 
     @GetMapping("/geo/fetchInfra.json")
     public CompletableFuture<ResponseEntity<Object>> fetchInfra(@RequestParam("lon") String lon, @RequestParam("lat") String lat, @RequestParam("rad") String rad) {
-        log.debug("fetchInfra starts!");
+        /*log.debug("fetchInfra starts!");*/
 
         List<CompletableFuture<List<Object>>> categorySearchFutures = new ArrayList<>();
 
@@ -116,6 +116,23 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.OK).body(res);
         } catch (Exception e) {
             log.debug("fetchSttnList error occurred!");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
+        }
+    }
+
+    @GetMapping("geo/getSttnArvInfo.json")
+    public ResponseEntity<Object> getSttnArvInfo(@RequestParam("cityCode") String cityCode, @RequestParam("nodeId") String nodeId) {
+        try {
+            List<Object> res = geoService.getSttnArvInfo(cityCode, nodeId);
+
+            if (res == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("can't find arriving data"));
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(res);
+        } catch (Exception e) {
+            log.debug("getSttnArvInfo error occurred!");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
         }

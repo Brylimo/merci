@@ -8,4 +8,5 @@ public interface GeoService {
     List<Object> cvtQueryToCoord(String query);
     CompletableFuture<List<Object>> searchKakaoCategory(String categoryCode, String lon, String lat, String rad);
     List<Object> fetchSttnList(String lon, String lat);
+    List<Object> getSttnArvInfo(String cityCode, String nodeId);
 }

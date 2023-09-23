@@ -32,7 +32,7 @@ $(() => {
         }
 
         if (zoom < sttnZoomThreshold) {
-            GeoLayer.removeLayer("layer_name", "pin_blue_marker");
+            GeoLayer.removeLayer("layer_name", "sttn_point_marker");
             GeoLayer.fetchedSttnList = [];
         }
 
@@ -206,7 +206,7 @@ $(() => {
 
                     diff.forEach(sttn => {
                         returnArr.push(sttn["nodeid"]);
-                        GeoLayer.pinBlueMarker(sttn["gpslong"], sttn["gpslati"]);
+                        GeoLayer.pinSttnPoint(sttn, sttn["gpslong"], sttn["gpslati"]);
                     });
 
                     GeoLayer.fetchedSttnList.push(...returnArr);

@@ -261,6 +261,39 @@ class GeoLayer {
         this.map.addLayer(infraPointLayer);
     }
 
+    // function pins station point
+    static pinSttnPoint(sttn, lon, lat) {
+        const feature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326', "EPSG:900913")),
+            data: sttn
+        });
+
+        const sttnPointStyle = new ol.style.Style({
+            image: new ol.style.Circle(({
+                radius: 3,
+                stroke: new ol.style.Stroke({
+                    color: "black"
+                }),
+                fill: new ol.style.Fill({
+                    color: "white"
+                })
+            }))
+        });
+        feature.setStyle(sttnPointStyle);
+
+        const sttnPointVSource = new ol.source.Vector({
+            features: [feature]
+        });
+
+        const sttnPointLayer = new ol.layer.Vector({
+            source: sttnPointVSource
+        });
+
+        sttnPointLayer.set("layer_name", "sttn_point_marker");
+
+        this.map.addLayer(sttnPointLayer);
+    }
+
     // function creates overlay element
     static createOverlay(overlayInfo) {
         if (overlayInfo instanceof OverlayInfo) {

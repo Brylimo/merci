@@ -70,4 +70,9 @@ public class GeoServiceImpl implements GeoService {
         List<Object> sttnList = tagoUtil.getCrdntPrxmtSttnList(lon, lat);
         return sttnList;
     }
+
+    @Override
+    public List<Object> getSttnArvInfo(String cityCode, String nodeId) {
+        return tagoUtil.getSttnAcctoArvlPrearngeInfoList(cityCode, nodeId);
+    }
 }
