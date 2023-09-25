@@ -1,24 +1,30 @@
-package com.thxpapa.merci.domain.calen;
+package com.thxpapa.merci.domain.score;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
 
 @Getter
 @Entity
-@Table(name="todo", schema="datamart")
+@Table(name="centime", schema="datamart")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = "todoUid", callSuper=false)
+@EqualsAndHashCode(of = "centimeUid", callSuper=false)
 @ToString
-public class Todo {
+public class Centime {
     @Id
-    @Column(name="todo_uid")
+    @Column(name="centime_uid")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int todoUid;
+    private int centimeUid;
 
     @Comment("내용")
     @Column(name="content", length = 45, nullable = false)
     private String content;
+
+    @Comment("포인트")
+    @Column(name="centime")
+    @ColumnDefault("0")
+    private int centime;
 
     @ManyToOne
     @JoinColumn(name="dayId")

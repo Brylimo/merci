@@ -1,4 +1,4 @@
-package com.thxpapa.merci.domain.calen;
+package com.thxpapa.merci.domain.score;
 
 import com.thxpapa.merci.domain.user.MerciUser;
 import jakarta.persistence.*;

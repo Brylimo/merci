@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/calendar.css}">
+</head>
+<body>
+    <div class="cframe">
+        <div class="calendar-frame">
+            <div class="header-frame">
+                <div class="left-wrapper">
+                    <div class="font-wrapper">
+                        <span class="icon-span">
+                            <i class="fa fa-caret-left" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <div>
+                        <div class="leftside-span">
+                            10월
+                        </div>
+                    </div>
+                    <div class="font-wrapper">
+                        <span class="icon-span">
+                            <i class="fa fa-caret-right" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <span class="year-span">2023</span>
+                </div>
+            </div>
+            <div class="calendar-body-frame">
+                <div th:each="day: ${week}" class="day">
+                    <p th:text="${day}">day</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- js import -->
+    <script th:src="@{/js/score/calendar.js}"></script>
+</body>
+</html>
