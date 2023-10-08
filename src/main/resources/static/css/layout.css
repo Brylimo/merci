@@ -5,16 +5,22 @@
 }
 
 .header {
-    background: linear-gradient(270deg, #ffcc80, #ff9900);
+    background: linear-gradient(270deg, #d1f0ff, #74c9fd);
     height: 7.2rem;
     width: 100%;
     position: fixed;
     z-index: 3020;
+    padding: 1rem;
 }
 
 .header .logo {
     position: absolute;
-    top: 0;
+    height: 100%;
+}
+
+.header .header-left {
+    position: absolute;
+    right: 0;
     height: 100%;
 }
 

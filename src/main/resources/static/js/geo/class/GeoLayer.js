@@ -14,75 +14,75 @@ class GeoLayer {
     static InfraType = {
         MT1: {
             name: "대형마트",
-            color: "red"
+            src: "/images/infra/mart.png"
         },
         CS2: {
             name: "편의점",
-            color: "orange"
+            src: "/images/infra/cvs.png"
         },
         PS3: {
             name: "어린이집, 유치원",
-            color: "yellow"
+            src: "/images/infra/kindergarten.png"
         },
         SC4: {
             name: "학교",
-            color: "green"
+            src: "/images/infra/school.png"
         },
         AC5: {
             name: "학원",
-            color: "blue"
+            src: "/images/infra/academy.png"
         },
         PK6: {
             name: "주차장",
-            color: "indigo"
+            src: "/images/infra/parking.png"
         },
         OL7: {
             name: "주유소, 충전소",
-            color: "purple"
+            src: "/images/infra/gas.png"
         },
         SW8: {
             name: "지하철역",
-            color: "pink"
+            src: "/images/infra/subway.png"
         },
         BK9: {
             name: "은행",
-            color: "teal"
+            src: "/images/infra/bank.png"
         },
         CT1: {
             name: "문화시설",
-            color: "black"
+            src: "/images/infra/building.png"
         },
         AG2: {
             name: "중개업소",
-            color: "brown"
+            src: "/images/infra/home.png"
         },
         PO3: {
             name: "공공기관",
-            color: "grey"
+            src: "/images/infra/building.png"
         },
         AT4: {
             name: "관광명소",
-            color: "aqua"
+            src: "/images/infra/attraction.png"
         },
         AD5: {
             name: "숙박",
-            color: "aquamarine"
+            src: "/images/infra/hotel.png"
         },
         FD6: {
             name: "음식점",
-            color: "chartreuse"
+            src: "/images/infra/restaurant.png"
         },
         CE7: {
             name: "카페",
-            color: "darkgreen"
+            src: "/images/infra/cafe.png"
         },
         HP8: {
             name: "병원",
-            color: "darkolivegreen"
+            src: "/images/infra/hospital.png"
         },
         PM9: {
             name: "약국",
-            color: "firebrick"
+            src: "/images/infra/pharmacy.png"
         }
     }
 
@@ -236,14 +236,12 @@ class GeoLayer {
         });
 
         const infraPointStyle = new ol.style.Style({
-            image: new ol.style.Circle(({
-                radius: 3,
-                stroke: new ol.style.Stroke({
-                    color: "black"
-                }),
-                fill: new ol.style.Fill({
-                    color: this.InfraType[infra["category_group_code"]].color
-                })
+            image: new ol.style.Icon(({
+                anchor: [10, 10],
+                anchorXUnits: 'pixels',
+                anchorYUnits: 'pixels',
+                src: this.InfraType[infra["category_group_code"]].src,
+                scale: 0.4
             }))
         });
         feature.setStyle(infraPointStyle);
