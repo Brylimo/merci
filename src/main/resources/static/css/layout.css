@@ -33,7 +33,7 @@
 .content {
     position: absolute;
     top: 7.2rem;
-    left: 29rem;
-    width: calc(100% - 29rem);
+    left: 8.9rem;
+    width: calc(100% - 8.9rem);
     height: calc(100% - 7.2rem);
 }

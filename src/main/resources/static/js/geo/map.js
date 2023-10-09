@@ -33,6 +33,7 @@ $(() => {
     // register map
     GeoLayer.setMap(map);
     executeRealTimeLocation();
+    $(".ol-zoom").hide();
 
     $(document).on('wheel click', () => {
         const zoom = map.getView().getZoom();

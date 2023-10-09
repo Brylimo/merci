@@ -8,7 +8,7 @@
 
 .cframe .calendar-frame {
     width: 55%;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 235, 255, 0.7);
     padding: 1rem 2rem;
 }
 
@@ -60,5 +60,75 @@
     text-align: center;
 }
 
+.calendar-body-frame .cell {
+    width: 100%;
+    position: relative;
+    padding: 0.3rem;
+    font-size: 16px;
+    border-radius: 6px;
+    color: #21252a;
+    background-color: transparent;
+}
 
+.calendar-body-frame .cell-inner {
+    z-index: -1;
+}
+
+.calendar-body-frame .cell:after {
+    content: "";
+    display: block;
+    padding-bottom: 100%;
+}
+
+.calendar-body-frame .obsolete-cell {
+    width: 100%;
+    position: relative;
+    padding: 0.3rem;
+    font-size: 16px;
+    border-radius: 6px;
+    color: #dddcdb;
+    background-color: transparent;
+}
+
+.calendar-body-frame .obsolete-cell:after {
+    content: "";
+    display: block;
+    padding-bottom: 100%;
+}
+
+.calendar-body-frame .today-cell {
+    width: 100%;
+    position: relative;
+    padding: 0.3rem;
+    font-size: 16px;
+    border-radius: 6px;
+    color: #21252a;
+    background-color: rgba(204, 204, 255, 0.3);
+}
+
+.calendar-body-frame .today-cell:after {
+    content: "";
+    display: block;
+    padding-bottom: 100%;
+}
+
+.calendar-body-frame .cell:hover {
+    background-color: rgba(255, 225, 255, 0.7);
+}
+
+.calendar-body-frame .today-cell:hover {
+    background-color: rgba(243, 221, 252, 0.79);
+}
+
+.calendar-body-frame .selected:hover {
+    background-color: rgba(255, 225, 255);
+}
+
+.calendar-body-frame .selected {
+    background-color: rgba(255, 225, 255, 0.7);
+}
+
+.calendar-body-frame .today-cell.selected {
+    background-color: rgba(243, 221, 252, 0.79);
+}
 
