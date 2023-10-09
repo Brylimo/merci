@@ -68,6 +68,9 @@
     <script th:src="@{/js/geo/class/GeoLayer.js}"></script>
 
     <!-- js import -->
+    <script th:inline="javascript">
+      const vKey = /*[[${vKey}]]*/ null;
+    </script>
     <script th:src="@{/js/ol/ol.js}"></script>
     <script th:src="@{/js/geo/map.js}"></script>
     <script th:src="@{/js/util/modal.js}"></script>

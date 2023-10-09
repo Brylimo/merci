@@ -4,18 +4,30 @@ $(() => {
     const infraZoomThreshold = 15.9;
     const sttnZoomThreshold = 16.5;
 
+    const maxExtent = ol.proj.transformExtent([112.5, 29.53522956294847, 135, 45.089], 'EPSG:4326', 'EPSG:3857')
+
+    // create layer
+    const layer = new ol.layer.Tile({
+        type: 'base',
+        source: new ol.source.XYZ({
+            url: 'http://api.vworld.kr/req/wmts/1.0.0/' + vKey + '/' + 'Base' + '/{z}/{y}/{x}.png'
+        })
+    });
+
     // create map
     const map = new ol.Map({
-       target: 'vMap',
-       layers: [
-           new ol.layer.Tile({
-               source: new ol.source.OSM()  // use OSM tile
-           })
-       ],
-       view: new ol.View({
-           center: ol.proj.fromLonLat([125.3, 36.5]),
-           zoom: 7
-       })
+        target: 'vMap',
+        layers: [layer],
+        view: new ol.View({
+            projection: 'EPSG:3857',
+            center: new ol.geom.Point([125.3, 36.5])
+                .transform('EPSG:4326', 'EPSG:3857')
+                .getCoordinates(),
+            zoom: 7,
+            minZoom: 7,
+            maxZoom: 19,
+            extent: maxExtent
+        })
     });
 
     // register map
