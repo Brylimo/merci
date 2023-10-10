@@ -12,33 +12,38 @@
     <div th:include="common/sidebar"></div>
 
     <section class="content">
-        <div class="cframe">
-            <div class="calendar-frame">
-                <div class="header-frame">
-                    <div class="left-wrapper">
-                        <div class="font-wrapper">
-                            <span class="icon-span">
-                                <i class="fa fa-caret-left" aria-hidden="true"></i>
-                            </span>
+        <div class="frame-wrapper">
+            <div class="cframe">
+                <div class="calendar-frame">
+                    <div class="header-frame">
+                        <div class="left-wrapper">
+                            <div class="font-wrapper">
+                                <span class="icon-span">
+                                    <i class="fa fa-caret-left" aria-hidden="true"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div class="leftside-span"></div>
+                            </div>
+                            <div class="font-wrapper">
+                                <span class="icon-span">
+                                    <i class="fa fa-caret-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </div>
                         <div>
-                            <div class="leftside-span"></div>
-                        </div>
-                        <div class="font-wrapper">
-                            <span class="icon-span">
-                                <i class="fa fa-caret-right" aria-hidden="true"></i>
-                            </span>
+                            <span class="year-span"></span>
                         </div>
                     </div>
-                    <div>
-                        <span class="year-span"></span>
+                    <div class="calendar-body-frame">
+                        <div th:each="day: ${week}" class="day">
+                            <p th:text="${day}">day</p>
+                        </div>
                     </div>
                 </div>
-                <div class="calendar-body-frame">
-                    <div th:each="day: ${week}" class="day">
-                        <p th:text="${day}">day</p>
-                    </div>
-                </div>
+            </div>
+            <div class="tframe">
+                hello
             </div>
         </div>
     </section>
