@@ -1,9 +1,13 @@
+document.write('<script src="/js/score/class/Holiday.js"></script>');
+
 let selectedDate = null;
 let targetDate = null;
 const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
 
 $(() => {
+    const cal = new Holiday(2023);
+
     $(".fa-caret-left").click(() => {
         targetDate.setMonth(targetDate.getMonth() - 1);
         $(".calendar-frame .leftside-span").text(monthNames[targetDate.getMonth()]);
@@ -49,6 +53,7 @@ const generateCalendar = (date) => {
     const thisDate = date;
     const today = new Date();
     const lastDate = new Date(date);
+    let columnCnt = 5; // default 5
     lastDate.setMonth(lastDate.getMonth() - 1);
 
     if (today.getFullYear() === thisDate.getFullYear() && today.getMonth() === thisDate.getMonth()) {
@@ -59,42 +64,67 @@ const generateCalendar = (date) => {
     const daysInMonth = getDaysInMonth(thisDate.getFullYear(), thisDate.getMonth());
     const firstDayOfMonth = getFirstDayOfMonth(thisDate.getFullYear(), thisDate.getMonth());
 
+    if (firstDayOfMonth + daysInMonth > 35) {
+        columnCnt = 6;
+    } else if (firstDayOfMonth + daysInMonth <= 28) {
+        columnCnt = 4;
+    } else {
+        columnCnt = 5;
+    }
+
+    $(".calendar-body-frame").css("grid-template-rows", `2.4rem repeat(${columnCnt}, calc((100% - 2.4rem) / ${columnCnt}))`);
+
     let dayCounter = 1;
     let nextDayCounter = 1;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < columnCnt; i++) {
         if (i === 0) {
             for (let j = firstDayOfMonth - 1; j >= 0; j--) {
                 createCell(lastDaysInMonth - j, "obsolete");
             }
             for (let j = firstDayOfMonth; j < 7; j++) {
+                let $cell = null;
                 if (todayFlag && today.getDate() === dayCounter) {
-                    const $cell = createCell(dayCounter, "today");
+                    $cell = createCell(dayCounter, "today");
 
                     if (selectedDate.getDate() === dayCounter) {
                         $cell.addClass("selected");
                     }
                 } else {
-                    createCell(dayCounter, "normal");
+                    $cell = createCell(dayCounter, "normal");
                 }
                 dayCounter++;
+
+                if ($cell && j % 7 === 0) {
+                    $cell.css("color", "red");
+                } else if ($cell && j % 7 === 6) {
+                    $cell.css("color", "blue");
+                }
             }
         } else {
             for (let j = 0; j < 7; j++) {
+                let $cell = null;
+
                 if (dayCounter <= daysInMonth) {
                     if (todayFlag && today.getDate() === dayCounter) {
-                        const $cell = createCell(dayCounter, "today");
+                        $cell = createCell(dayCounter, "today");
 
                         if (selectedDate.getDate() === dayCounter) {
                             $cell.addClass("selected");
                         }
                     } else {
-                        createCell(dayCounter, "normal");
+                        $cell = createCell(dayCounter, "normal");
                     }
                     dayCounter++;
                 } else {
                     createCell(nextDayCounter, "obsolete");
                     nextDayCounter++
+                }
+
+                if ($cell && j % 7 === 0) {
+                    $cell.css("color", "red");
+                } else if ($cell && j % 7 === 6) {
+                    $cell.css("color", "blue");
                 }
             }
         }

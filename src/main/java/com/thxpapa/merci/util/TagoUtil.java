@@ -21,14 +21,14 @@ import java.util.List;
 public class TagoUtil {
     @Value("${tago.api.url}")
     private String tagoUrl;
-    @Value("${tago.api.akey}")
+    @Value("${datago.api.akey}")
     private String akey;
 
     public List<Object> getCrdntPrxmtSttnList(String lon, String lat) { // 반경 500m
         try {
             HttpURLConnection conn = null;
 
-            StringBuilder urlBuilder = new StringBuilder(tagoUrl + "/1613000/BusSttnInfoInqireService/getCrdntPrxmtSttnList");
+            StringBuilder urlBuilder = new StringBuilder(tagoUrl + "/BusSttnInfoInqireService/getCrdntPrxmtSttnList");
             urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + akey);
             urlBuilder.append("&" + URLEncoder.encode("pageNo","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8"));
             urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("100", "UTF-8"));
@@ -67,7 +67,7 @@ public class TagoUtil {
         try {
             HttpURLConnection conn = null;
 
-            StringBuilder urlBuilder = new StringBuilder(tagoUrl + "/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList");
+            StringBuilder urlBuilder = new StringBuilder(tagoUrl + "/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList");
             urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + akey);
             urlBuilder.append("&" + URLEncoder.encode("pageNo","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8"));
             urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("100", "UTF-8"));
