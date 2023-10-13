@@ -1,24 +1,13 @@
 package com.thxpapa.merci;
 
-
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @EnableAsync
 @SpringBootApplication
-public class MerciApplication extends SpringBootServletInitializer {
-	static String APPLICATION_DEV = "spring.config.location=classpath:/application-dev.properties";
-
+public class MerciApplication {
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(MerciApplication.class).properties(APPLICATION_DEV).run(args);
-		// new SpringApplicationBuilder(MerciApplication.class).run(args);
+		SpringApplication.run(MerciApplication.class, args);
 	}
-
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-		return builder.sources(MerciApplication.class);
-	}
-
 }
