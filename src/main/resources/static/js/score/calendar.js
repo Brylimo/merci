@@ -1,13 +1,9 @@
-document.write('<script src="/js/score/class/Holiday.js"></script>');
-
 let selectedDate = null;
 let targetDate = null;
 const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
 
 $(() => {
-    const cal = new Holiday(2023);
-
     $(".fa-caret-left").click(() => {
         targetDate.setMonth(targetDate.getMonth() - 1);
         $(".calendar-frame .leftside-span").text(monthNames[targetDate.getMonth()]);
