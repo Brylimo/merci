@@ -140,13 +140,6 @@ public class ApiController {
         }
     }
 
-    // calendar rest api call
-    @GetMapping("/cal/practice")
-    public ResponseEntity<Object> practice(@RequestParam("solYear") String solYear, @RequestParam("solMonth") String solMonth) {
-        specialDayUtil.getRestDeInfo(solYear, solMonth);
-        return null;
-    }
-
     // auth rest api call
     @PostMapping("/auth/join.json")
     public ResponseEntity<Object> join(@ModelAttribute UserRegisterRequestDto userRegisterRequestDto) {

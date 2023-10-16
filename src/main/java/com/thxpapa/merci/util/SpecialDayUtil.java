@@ -1,9 +1,12 @@
 package com.thxpapa.merci.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.thxpapa.merci.dto.SpecialDayDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,17 +24,19 @@ import java.util.List;
 public class SpecialDayUtil {
     @Value("${special.api.url}")
     private String specialUrl;
-    @Value("${datago.api.akey}")
-    private String akey;
+    @Value("${datago.api.ekey}")
+    private String eKey;
 
-    public List<Object> getRestDeInfo(String solYear, String solMonth) {
+    public List<SpecialDayDto> getRestDeInfo(String solYear) {
         try {
             HttpURLConnection conn = null;
+            JsonParser jsonParser = new JsonParser();
+            ObjectMapper objectMapper = new ObjectMapper();
 
             StringBuilder urlBuilder = new StringBuilder(specialUrl + "/openapi/service/SpcdeInfoService/getRestDeInfo");
-            urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + akey);
+            urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + eKey);
             urlBuilder.append("&" + URLEncoder.encode("solYear","UTF-8") + "=" + URLEncoder.encode(solYear, "UTF-8"));
-            urlBuilder.append("&" + URLEncoder.encode("solMonth","UTF-8") + "=" + URLEncoder.encode(solMonth, "UTF-8"));
+            urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("200", "UTF-8"));
 
             conn = getConnection(urlBuilder.toString());
             if (conn == null) return null;
@@ -46,12 +51,15 @@ public class SpecialDayUtil {
                     sb.append(line);
                 }
 
-                JsonParser jsonParser = new JsonParser();
-                JsonObject json = (JsonObject) jsonParser.parse(sb.toString());
-                JsonObject res = (JsonObject) json.get("response");
-                JsonArray list = ((JsonObject) res.get("body")).getAsJsonObject("items").getAsJsonArray("item");
+                XmlMapper xmlMapper = new XmlMapper();
+                JsonNode jsonNode = xmlMapper.readTree(sb.toString());
 
-                return Arrays.asList(new ObjectMapper().readValue(list.toString(), Object[].class));
+                String jsonString = objectMapper.writeValueAsString(jsonNode);
+
+                JsonObject json = (JsonObject) jsonParser.parse(jsonString);
+                JsonArray list = ((JsonObject) json.get("body")).getAsJsonObject("items").getAsJsonArray("item");
+
+                return Arrays.asList(new ObjectMapper().readValue(list.toString(), SpecialDayDto[].class));
             }
             return null;
         } catch(Exception e) {

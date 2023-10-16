@@ -39,6 +39,9 @@ dependencies {
 	// Json
 	implementation 'com.google.code.gson:gson:2.10.1'
 
+	// XML
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
+
 	// Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security:3.1.1'
 }
