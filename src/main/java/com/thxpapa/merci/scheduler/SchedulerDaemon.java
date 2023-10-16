@@ -21,6 +21,7 @@ public class SchedulerDaemon {
 
     static private boolean lock = false;
 
+    // 매년 1월 1일 실행
     @Scheduled(cron = "0 0 0 1 1 *")
     public void fetchSpecialDayData() {
         if (lock) return;

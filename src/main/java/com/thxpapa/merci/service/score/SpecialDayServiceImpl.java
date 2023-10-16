@@ -69,4 +69,9 @@ public class SpecialDayServiceImpl implements SpecialDayService {
             log.error(e.getMessage());
         }
     }
+
+    @Override
+    public List<SpecialDay> getSpecialDaysByMonth(LocalDate startDate, LocalDate endDate) {
+        return specialDayRepository.findAllByDateBetween(startDate, endDate);
+    }
 }
