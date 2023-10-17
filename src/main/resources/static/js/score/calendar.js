@@ -18,6 +18,32 @@ $(() => {
         generateCalendar(targetDate);
     });
 
+    $(".tcontent-frame button").bind("click", (event) => {
+        let dataObj = {};
+        dataObj.date = $(".tcontent-frame input[name='date']").val();
+        dataObj.task = $(".tcontent-frame input[name='task']").val();
+
+        $(".tcontent-frame input[name='task']").val('');
+
+        $.ajax({
+            headers: {
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            },
+            type: "POST",
+            url: "/api/cal/addOneTask.json",
+            data: $.param(dataObj),
+            dataType: "json",
+            success: (res) => {
+                // re-render list of to-do
+                generateTodoList(formatDateToString(selectedDate))
+            },
+            error: (error) => {
+                alert('일정 등록에 실패했습니다. \n해당 문제가 지속될 경우 관리자에게 문의하여 주십시오.');
+                console.error(error.code);
+            }
+        })
+    });
+
     init();
 });
 
@@ -30,15 +56,38 @@ const init = () => {
     $(".calendar-frame .year-span").text(today.getFullYear());
 
     generateCalendar(today);
+    todoRenderer(selectedDate);
 }
 
-const onSelectHandler = function(event) {
+const onSelectHandler = function() {
     const selectedElements = document.querySelectorAll(".calendar-body-frame .selected");
 
     selectedElements.forEach(element => {
        $(element).removeClass("selected");
     });
     $(this).addClass("selected");
+
+    const targetDay = $(this).find(".cell-inner").text();
+    selectedDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDay);
+
+    todoRenderer(selectedDate);
+}
+
+const todoRenderer = (selectedDate) => {
+    $(".theader-frame .yoil").text(monthNames[selectedDate.getMonth()]);
+    $(".theader-frame .day").text(selectedDate.getDate());
+
+    $(".tcontent-frame input[name='date']").val(formatDateToString(selectedDate));
+
+    generateTodoList(formatDateToString(selectedDate));
+}
+
+const formatDateToString = (date) => {
+    const year = date.getFullYear();
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
+
+    return `${year}-${month}-${day}`;
 }
 
 const generateCalendar = (date) => {
@@ -73,58 +122,154 @@ const generateCalendar = (date) => {
     let dayCounter = 1;
     let nextDayCounter = 1;
 
-    for (let i = 0; i < columnCnt; i++) {
-        if (i === 0) {
-            for (let j = firstDayOfMonth - 1; j >= 0; j--) {
-                createCell(lastDaysInMonth - j, "obsolete");
-            }
-            for (let j = firstDayOfMonth; j < 7; j++) {
-                let $cell = null;
-                if (todayFlag && today.getDate() === dayCounter) {
-                    $cell = createCell(dayCounter, "today");
+    $.ajax({
+        url: "/api/cal/getSpecialDaysByMonth.json",
+        type: "GET",
+        data: {
+            year: thisDate.getFullYear(),
+            month: thisDate.getMonth() + 1
+        },
+        success: (res) => {
+            const holidayList = res.map(holiday => {
+               return holiday["date"] ?
+                   {
+                       day: holiday["date"][2],
+                       name: holiday["dateName"]
+                   } :
+                   undefined;
+            });
 
-                    if (selectedDate.getDate() === dayCounter) {
-                        $cell.addClass("selected");
+            for (let i = 0; i < columnCnt; i++) {
+                if (i === 0) {
+                    for (let j = firstDayOfMonth - 1; j >= 0; j--) {
+                        createCell(lastDaysInMonth - j, "obsolete");
                     }
-                } else {
-                    $cell = createCell(dayCounter, "normal");
-                }
-                dayCounter++;
+                    for (let j = firstDayOfMonth; j < 7; j++) {
+                        let $cell = null;
+                        let isHoliday = holidayList.some(holiday => holiday && holiday.day === dayCounter);
 
-                if ($cell && j % 7 === 0) {
-                    $cell.css("color", "red");
-                } else if ($cell && j % 7 === 6) {
-                    $cell.css("color", "blue");
-                }
-            }
-        } else {
-            for (let j = 0; j < 7; j++) {
-                let $cell = null;
+                        if (todayFlag && today.getDate() === dayCounter) {
+                            if (isHoliday) {
+                                const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
+                                holiday.forEach(holy => {
+                                    $cell = createCell(dayCounter, "today", holy.name);
+                                });
+                            } else {
+                                $cell = createCell(dayCounter, "today");
+                            }
 
-                if (dayCounter <= daysInMonth) {
-                    if (todayFlag && today.getDate() === dayCounter) {
-                        $cell = createCell(dayCounter, "today");
-
-                        if (selectedDate.getDate() === dayCounter) {
-                            $cell.addClass("selected");
+                            if (selectedDate.getDate() === dayCounter) {
+                                $cell.addClass("selected");
+                            }
+                        } else {
+                            if (isHoliday) {
+                                const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
+                                holiday.forEach(holy => {
+                                    $cell = createCell(dayCounter, "normal", holy.name);
+                                });
+                            } else {
+                                $cell = createCell(dayCounter, "normal");
+                            }
                         }
-                    } else {
-                        $cell = createCell(dayCounter, "normal");
-                    }
-                    dayCounter++;
-                } else {
-                    createCell(nextDayCounter, "obsolete");
-                    nextDayCounter++
-                }
 
-                if ($cell && j % 7 === 0) {
-                    $cell.css("color", "red");
-                } else if ($cell && j % 7 === 6) {
-                    $cell.css("color", "blue");
+                        // weekend
+                        if ($cell && j % 7 === 0) {
+                            $cell.css("color", "red");
+                        } else if ($cell && j % 7 === 6) {
+                            $cell.css("color", "blue");
+                        }
+
+                        // process holiday
+                        if (isHoliday) {
+                            $cell.css("color", "red");
+                        }
+
+                        dayCounter++;
+                    }
+                } else {
+                    for (let j = 0; j < 7; j++) {
+                        let $cell = null;
+                        let isHoliday = holidayList.some(holiday => holiday && holiday.day === dayCounter);
+
+                        if (dayCounter <= daysInMonth) {
+                            if (todayFlag && today.getDate() === dayCounter) {
+                                if (isHoliday) {
+                                    const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
+                                    holiday.forEach(holy => {
+                                        $cell = createCell(dayCounter, "today", holy.name);
+                                    });
+                                } else {
+                                    $cell = createCell(dayCounter, "today");
+                                }
+
+                                if (selectedDate.getDate() === dayCounter) {
+                                    $cell.addClass("selected");
+                                }
+                            } else {
+                                if (isHoliday) {
+                                    const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
+                                    holiday.forEach(holy => {
+                                        $cell = createCell(dayCounter, "normal", holy.name);
+                                    });
+                                } else {
+                                    $cell = createCell(dayCounter, "normal");
+                                }
+                            }
+
+                            // weekend
+                            if ($cell && j % 7 === 0) {
+                                $cell.css("color", "red");
+                            } else if ($cell && j % 7 === 6) {
+                                $cell.css("color", "blue");
+                            }
+
+                            // process holiday
+                            if (isHoliday) {
+                                $cell.css("color", "red");
+                            }
+
+                            dayCounter++;
+                        } else {
+                            createCell(nextDayCounter, "obsolete");
+                            nextDayCounter++
+                        }
+                    }
                 }
             }
+        },
+        error: (error) => {
+            console.error(error.code);
         }
-    }
+    });
+}
+
+const generateTodoList = (dateString) => {
+    $.ajax({
+        url: "/api/cal/getAllDayTasks.json",
+        type: "GET",
+        data: {
+            date: dateString
+        },
+        success: (res) => {
+            $(".tcontent-frame .todo-list").empty();
+
+            res.forEach(job => {
+                const $task = $("<div class='task-frame'></div>");
+                const $taskCheckBox = $("<input type='checkbox' />");
+
+                const $taskTxt = $("<div class='task-txt'></div>");
+                $taskTxt.text(job.content);
+
+                $task.append($taskCheckBox);
+                $task.append($taskTxt);
+
+                $(".tcontent-frame .todo-list").append($task);
+            });
+        },
+        error: (error) => {
+            console.error(error.code);
+        }
+    });
 }
 
 const getFirstDayOfMonth = (year, month) => {
@@ -137,7 +282,7 @@ const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();
 }
 
-const createCell = (day, kind) => {
+const createCell = (day, kind, holiday) => {
     let $cell = null;
 
     if (kind === "normal") {
@@ -154,6 +299,13 @@ const createCell = (day, kind) => {
     $cellInner.text(day);
 
     $cell.append($cellInner);
+
+    if (holiday) {
+        const $cellSpecial = $("<div class='cell-special'></div>");
+        $cellSpecial.text(holiday);
+
+        $cell.append($cellSpecial);
+    }
     $(".calendar-body-frame").append($cell);
 
     return $cell;

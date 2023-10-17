@@ -1,0 +1,35 @@
+package com.thxpapa.merci.service.score;
+
+import com.thxpapa.merci.domain.score.Day;
+import com.thxpapa.merci.domain.score.Task;
+import com.thxpapa.merci.repository.scoreRepository.TaskRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class TaskServiceImpl implements TaskService {
+
+    private final TaskRepository taskRepository;
+
+    @Override
+    public Task createTask(Day day, String content, int reward) {
+        Task createdTask = taskRepository.save(Task.builder()
+                                .content(content)
+                                .reward(reward)
+                                .day(day)
+                                .statusCd("01")
+                                .build());
+
+        return createdTask;
+    }
+
+    @Override
+    public List<Task> getTasksByDay(Day day) {
+        return taskRepository.findTasksByDay(day);
+    }
+}
