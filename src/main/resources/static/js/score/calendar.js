@@ -18,32 +18,6 @@ $(() => {
         generateCalendar(targetDate);
     });
 
-    $(".tcontent-frame button").bind("click", (event) => {
-        let dataObj = {};
-        dataObj.date = $(".tcontent-frame input[name='date']").val();
-        dataObj.task = $(".tcontent-frame input[name='task']").val();
-
-        $(".tcontent-frame input[name='task']").val('');
-
-        $.ajax({
-            headers: {
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-            },
-            type: "POST",
-            url: "/api/cal/addOneTask.json",
-            data: $.param(dataObj),
-            dataType: "json",
-            success: (res) => {
-                // re-render list of to-do
-                generateTodoList(formatDateToString(selectedDate))
-            },
-            error: (error) => {
-                alert('일정 등록에 실패했습니다. \n해당 문제가 지속될 경우 관리자에게 문의하여 주십시오.');
-                console.error(error.code);
-            }
-        })
-    });
-
     init();
 });
 
@@ -73,7 +47,13 @@ const onSelectHandler = function() {
     todoRenderer(selectedDate);
 }
 
-const onClickAddATaskHandler = function(event) {
+const onClickAddATaskHandler = function() {
+    const addBtnFrames = document.querySelectorAll(".todo-list .add-frame")
+
+    addBtnFrames.forEach(frame => {
+        $(frame).remove();
+    })
+
     const $inputFrame = $(`
         <div class='task-frame'>
             <input type="hidden" name="date" />
@@ -82,8 +62,46 @@ const onClickAddATaskHandler = function(event) {
         </div>
     `);
 
-    $(".tcontent-frame .todo-list").prepend($inputFrame);
+    $($inputFrame).find(".save-btn").click(onClickTaskSaveBtnHandler);
+
+    $(".tcontent-frame .todo-list").append($inputFrame);
     $(".tcontent-frame input[name='date']").val(formatDateToString(selectedDate));
+
+    renderTaskAddBtn();
+}
+
+const onClickTaskSaveBtnHandler = (event) => {
+    let dataObj = {};
+    dataObj.date = $(".tcontent-frame input[name='date']").val();
+    dataObj.task = $(".tcontent-frame input[name='task']").val();
+
+    $(".tcontent-frame input[name='task']").val('');
+
+    $.ajax({
+        headers: {
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        type: "POST",
+        url: "/api/cal/addOneTask.json",
+        data: $.param(dataObj),
+        dataType: "json",
+        success: (res) => {
+            // re-render list of to-do
+            generateTodoList(formatDateToString(selectedDate))
+        },
+        error: (error) => {
+            alert('일정 등록에 실패했습니다. \n해당 문제가 지속될 경우 관리자에게 문의하여 주십시오.');
+            console.error(error.code);
+        }
+    });
+}
+
+const taskCheckHandler = function(event) {
+    if ($(this).is(':checked')) {
+        $(this).parent().find('.task-txt').addClass("line-through");
+    } else {
+        $(this).parent().find('.task-txt').removeClass("line-through");
+    }
 }
 
 const todoRenderer = (selectedDate) => {
@@ -267,33 +285,41 @@ const generateTodoList = (dateString) => {
             res.forEach(job => {
                 const $task = $("<div class='task-frame'></div>");
                 const $taskCheckBox = $("<input type='checkbox' />");
+                $taskCheckBox.on("change", taskCheckHandler);
 
                 const $taskTxt = $("<div class='task-txt'></div>");
                 $taskTxt.text(job.content);
 
+                const $delBtn = $("<button type='button' class='del'>삭제</button>");
+
                 $task.append($taskCheckBox);
                 $task.append($taskTxt);
+                $task.append($delBtn);
 
                 $(".tcontent-frame .todo-list").append($task);
             });
 
-            const $add = $("<div class='add-frame'></div>");
-            const $addPlusBtn = $("<span class=\"icon-span\"><i class=\"fa-solid fa-plus\" aria-hidden=\"true\"></i></span>");
-
-            const $addTxt = $("<div class='task-txt'></div>");
-            $addTxt.text("Add a Task");
-
-            $add.append($addPlusBtn);
-            $add.append($addTxt);
-
-            $add.click(onClickAddATaskHandler);
-
-            $(".tcontent-frame .todo-list").append($add);
+            renderTaskAddBtn();
         },
         error: (error) => {
             console.error(error.code);
         }
     });
+}
+
+const renderTaskAddBtn = () => {
+    const $add = $("<div class='add-frame'></div>");
+    const $addPlusBtn = $("<span class=\"icon-span\"><i class=\"fa-solid fa-plus\" aria-hidden=\"true\"></i></span>");
+
+    const $addTxt = $("<div class='task-txt'></div>");
+    $addTxt.text("Add a Task");
+
+    $add.append($addPlusBtn);
+    $add.append($addTxt);
+
+    $add.click(onClickAddATaskHandler);
+
+    $(".tcontent-frame .todo-list").append($add);
 }
 
 const getFirstDayOfMonth = (year, month) => {

@@ -150,7 +150,9 @@
 }
 
 .tframe .todo-frame .tcontent-frame {
+    height: calc(100% - 3.6rem);
     padding: 1.5rem;
+    overflow: auto;
 }
 
 .theader-frame .yoil, .day {
@@ -174,4 +176,8 @@
 
 .todo-list .add-frame:hover {
     background-color: greenyellow;
+}
+
+.todo-list .line-through {
+    text-decoration: line-through;
 }

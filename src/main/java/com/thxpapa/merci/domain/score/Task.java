@@ -29,6 +29,11 @@ public class Task {
     @ColumnDefault("0")
     private int reward;
 
+    @Comment("완료 유무")
+    @Column(name="done_cd")
+    @ColumnDefault("false")
+    private boolean doneCd;
+
     @Comment("상태정보")
     @Column(name="status_cd", length = 3, nullable = false)
     @ColumnDefault("'01'")
