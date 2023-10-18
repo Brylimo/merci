@@ -145,6 +145,33 @@
     padding: 1rem;
 }
 
+.tframe .todo-frame .theader-frame {
+    margin-bottom: 0.5rem;
+}
+
+.tframe .todo-frame .tcontent-frame {
+    padding: 1.5rem;
+}
+
 .theader-frame .yoil, .day {
     font-size: 3rem;
+}
+
+.todo-list .task-frame {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem;
+    border-bottom: 0.05rem solid gray;
+}
+
+.todo-list .add-frame {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem;
+    border-bottom: 0.05rem solid gray;
+    cursor: pointer;
+}
+
+.todo-list .add-frame:hover {
+    background-color: greenyellow;
 }

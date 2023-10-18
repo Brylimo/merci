@@ -73,11 +73,22 @@ const onSelectHandler = function() {
     todoRenderer(selectedDate);
 }
 
+const onClickAddATaskHandler = function(event) {
+    const $inputFrame = $(`
+        <div class='task-frame'>
+            <input type="hidden" name="date" />
+            <input type="text" name="task" placeholder="할일을 입력해주세요." />
+            <button type="button" class="save-btn">입력</button>
+        </div>
+    `);
+
+    $(".tcontent-frame .todo-list").prepend($inputFrame);
+    $(".tcontent-frame input[name='date']").val(formatDateToString(selectedDate));
+}
+
 const todoRenderer = (selectedDate) => {
     $(".theader-frame .yoil").text(monthNames[selectedDate.getMonth()]);
     $(".theader-frame .day").text(selectedDate.getDate());
-
-    $(".tcontent-frame input[name='date']").val(formatDateToString(selectedDate));
 
     generateTodoList(formatDateToString(selectedDate));
 }
@@ -265,6 +276,19 @@ const generateTodoList = (dateString) => {
 
                 $(".tcontent-frame .todo-list").append($task);
             });
+
+            const $add = $("<div class='add-frame'></div>");
+            const $addPlusBtn = $("<span class=\"icon-span\"><i class=\"fa-solid fa-plus\" aria-hidden=\"true\"></i></span>");
+
+            const $addTxt = $("<div class='task-txt'></div>");
+            $addTxt.text("Add a Task");
+
+            $add.append($addPlusBtn);
+            $add.append($addTxt);
+
+            $add.click(onClickAddATaskHandler);
+
+            $(".tcontent-frame .todo-list").append($add);
         },
         error: (error) => {
             console.error(error.code);
