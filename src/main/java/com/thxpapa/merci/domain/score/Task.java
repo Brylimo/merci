@@ -29,6 +29,11 @@ public class Task {
     @ColumnDefault("0")
     private int reward;
 
+    @Comment("이벤트 유무")
+    @Column(name="event_cd", length = 2, nullable = false)
+    @ColumnDefault("'00'")
+    private String eventCd;
+
     @Comment("완료 유무")
     @Column(name="done_cd")
     @ColumnDefault("false")
@@ -54,9 +59,10 @@ public class Task {
     private Day day;
 
     @Builder
-    public Task(String content, int reward, Day day, String statusCd) {
+    public Task(String content, int reward, Day day, String eventCd, String statusCd) {
         this.content = content;
         this.reward = reward;
+        this.eventCd = eventCd;
         this.statusCd = statusCd;
         this.day = day;
     }

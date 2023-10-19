@@ -18,6 +18,33 @@ $(() => {
         generateCalendar(targetDate);
     });
 
+    $(".modal-content .register-task").click(() => {
+        let dataObj = {};
+        dataObj.isEvent = $(".modal-content input[name='is-event']").val();
+        dataObj.date = $(".modal-content input[name='date']").val();
+        dataObj.task = $(".modal-content input[name='task']").val();
+
+        $(".modal-content input[name='task']").val('');
+
+        $.ajax({
+            headers: {
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            },
+            type: "POST",
+            url: "/api/cal/addOneTask.json",
+            data: $.param(dataObj),
+            dataType: "json",
+            success: (res) => {
+                $(".modal-wrapper2").removeClass("modal-show");
+                $(".modal-wrapper2").addClass("modal-none");
+            },
+            error: (error) => {
+                alert('일정 등록에 실패했습니다. \n해당 문제가 지속될 경우 관리자에게 문의하여 주십시오.');
+                console.error(error.code);
+            }
+        });
+    });
+
     init();
 });
 
@@ -33,7 +60,7 @@ const init = () => {
     todoRenderer(selectedDate);
 }
 
-const onSelectHandler = function() {
+const onClickCellHandler = function() {
     const selectedElements = document.querySelectorAll(".calendar-body-frame .selected");
 
     selectedElements.forEach(element => {
@@ -47,6 +74,26 @@ const onSelectHandler = function() {
     todoRenderer(selectedDate);
 }
 
+const onDblClickCellHandler = function() {
+    $(".modal-wrapper2").removeClass("modal-none");
+    $(".modal-wrapper2").addClass("modal-show");
+
+    $(".modal-wrapper2 .modal-content input[name='date']").val(formatDateToString(selectedDate));
+
+    $(".modal-wrapper2 .modal-header").on("mousedown", function () {
+        const $modal = $(".modal-wrapper2");
+
+        const currentLeft = $modal.position().left;
+        const currentTop = $modal.position().top;
+
+        $modal.css("transform", "none");
+        $modal.css("left", currentLeft);
+        $modal.css("top", currentTop);
+
+        $(".modal-wrapper2.draggable").draggable();
+    });
+}
+
 const onClickAddATaskHandler = function() {
     const addBtnFrames = document.querySelectorAll(".todo-list .add-frame")
 
@@ -56,13 +103,16 @@ const onClickAddATaskHandler = function() {
 
     const $inputFrame = $(`
         <div class='task-frame'>
+            <input type="hidden" name="is-event" value="false" />
             <input type="hidden" name="date" />
             <input type="text" name="task" placeholder="할일을 입력해주세요." />
             <button type="button" class="save-btn">입력</button>
+            <button type="button" class="subtract-btn">-</button>
         </div>
     `);
 
     $($inputFrame).find(".save-btn").click(onClickTaskSaveBtnHandler);
+    $($inputFrame).find(".subtract-btn").click(onClickTaskSubtractBtnHandler);
 
     $(".tcontent-frame .todo-list").append($inputFrame);
     $(".tcontent-frame input[name='date']").val(formatDateToString(selectedDate));
@@ -72,6 +122,7 @@ const onClickAddATaskHandler = function() {
 
 const onClickTaskSaveBtnHandler = (event) => {
     let dataObj = {};
+    dataObj.isEvent = $(".tcontent-frame input[name='is-event']").val();
     dataObj.date = $(".tcontent-frame input[name='date']").val();
     dataObj.task = $(".tcontent-frame input[name='task']").val();
 
@@ -94,6 +145,24 @@ const onClickTaskSaveBtnHandler = (event) => {
             console.error(error.code);
         }
     });
+}
+
+const onClickTaskSubtractBtnHandler = function(event) {
+   $(this).parent().remove();
+}
+
+const onClickTaskDelBtnHandler = function(event) {
+    const eventId = $(this).parent().data("eventId");
+
+    $.ajax({
+        url: `/api/cal/deleteTask/${eventId}.json`,
+        type: "DELETE",
+        error: (error) => {
+            console.error(error.code);
+        }
+    });
+
+    $(this).parent().remove();
 }
 
 const taskCheckHandler = function(event) {
@@ -281,9 +350,12 @@ const generateTodoList = (dateString) => {
         },
         success: (res) => {
             $(".tcontent-frame .todo-list").empty();
-
-            res.forEach(job => {
+            res.filter(job => {
+                return job["eventCd"] === "00";
+            }).forEach(job => {
                 const $task = $("<div class='task-frame'></div>");
+                $task.data("eventId", job["taskUid"]);
+
                 const $taskCheckBox = $("<input type='checkbox' />");
                 $taskCheckBox.on("change", taskCheckHandler);
 
@@ -291,6 +363,8 @@ const generateTodoList = (dateString) => {
                 $taskTxt.text(job.content);
 
                 const $delBtn = $("<button type='button' class='del'>삭제</button>");
+
+                $delBtn.click(onClickTaskDelBtnHandler);
 
                 $task.append($taskCheckBox);
                 $task.append($taskTxt);
@@ -337,12 +411,14 @@ const createCell = (day, kind, holiday) => {
 
     if (kind === "normal") {
         $cell = $("<div class='cell'></div>");
-        $cell.click(onSelectHandler);
+        $cell.click(onClickCellHandler);
+        $cell.dblclick(onDblClickCellHandler);
     } else if (kind === "obsolete") {
         $cell = $("<div class='obsolete-cell'></div>");
     } else if (kind === "today") {
         $cell = $("<div class='today-cell'></div>");
-        $cell.click(onSelectHandler);
+        $cell.click(onClickCellHandler);
+        $cell.dblclick(onDblClickCellHandler);
     }
 
     const $cellInner = $("<div class='cell-inner'></div>");

@@ -1,7 +1,7 @@
 package com.thxpapa.merci.service.score;
 
 import com.thxpapa.merci.domain.score.SpecialDay;
-import com.thxpapa.merci.dto.SpecialDayDto;
+import com.thxpapa.merci.dto.score.SpecialDayDto;
 import com.thxpapa.merci.repository.scoreRepository.SpecialDayRepository;
 import com.thxpapa.merci.util.SpecialDayUtil;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class SpecialDayServiceImpl implements SpecialDayService {
     @Override
     public void updateSpecialDay() {
         final int startYear = 2004;
-        final int endYear = LocalDate.now().plusYears(1).getYear();
+        final int endYear = LocalDate.now().plusYears(2).getYear();
 
         try {
             Long idx = 0L;
@@ -45,16 +45,18 @@ public class SpecialDayServiceImpl implements SpecialDayService {
                     continue;
                 }
 
+                log.info(solYear + " year holiday data is being stored..");
+
                 List<SpecialDayDto> specialDayList = specialDayUtil.getRestDeInfo(String.valueOf(solYear));
 
                 for (SpecialDayDto element: specialDayList) {
                     LocalDate date = LocalDate.parse(element.getLocdate(), formatter);
 
-                    if (ld != null && date.isBefore(ld)) {
+                    if (ld != null && !date.isAfter(ld)) {
                         continue;
                     }
 
-                    Boolean isHoliday = element.getIsHoliday().equals("0") ? false : true;
+                    Boolean isHoliday = element.getIsHoliday().equals("N") ? false : true;
 
                     specialDayRepository.save(SpecialDay.builder()
                             .specialDayUid(element.getLocdate()+SpecialDay.idSplitter+(++idx))

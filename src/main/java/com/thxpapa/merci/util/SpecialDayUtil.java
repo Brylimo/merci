@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.thxpapa.merci.dto.SpecialDayDto;
+import com.thxpapa.merci.dto.score.SpecialDayDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -75,8 +75,8 @@ public class SpecialDayUtil {
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Content-type", "application/json");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(3000);
+            conn.setConnectTimeout(100000);
+            conn.setReadTimeout(100000);
             conn.connect();
             return conn;
         } catch (Exception e) {

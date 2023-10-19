@@ -28,13 +28,39 @@
     transform: translate(-50%, -50%);
 }
 
-.modal-header {
+.modal-wrapper2 {
+    position: absolute;
+    background: #fff;
+    width: 44.8rem;
+    border: 0.1rem solid #e7e7e7;
+    display: block;
+    left: 50%;
+    top: 35%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 24px 38px 3px rgba(0,0,0,.14), 0 9px 46px 8px rgba(0,0,0,.12), 0 11px 15px -7px rgba(0,0,0,.2);
+}
+
+.modal-wrapper .modal-header {
     height: 6rem;
     background-color: #ff9900;
     padding: 0 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: black;
+}
+
+.modal-wrapper2 .modal-header {
+    height: 3.6rem;
+    background-color: #F1F3F4;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+
+.modal-wrapper2 .modal-content {
+    padding: 2rem;
 }
 
 .modal-header strong {

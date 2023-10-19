@@ -1,4 +1,4 @@
-package com.thxpapa.merci.dto;
+package com.thxpapa.merci.dto.score;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

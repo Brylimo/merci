@@ -163,6 +163,25 @@ public class ApiController {
         }
     }
 
+    @GetMapping(value = "/cal/getTagDaysByMonth.json", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getTagDaysByMonth(@RequestParam("year") String year, @RequestParam("month") String month) {
+        try {
+            LocalDate startDate = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month)).atDay(1);
+            LocalDate endDate = startDate.plusMonths(1).minusDays(1);
+
+            List<SpecialDay> specialDayList = specialDayService.getSpecialDaysByMonth(startDate, endDate);
+
+            // todo ADD TAG DAY RELATED DATA FETCHING SERVICE
+
+            // 이벤트까지 처리하고 TagDayDto에 담아서 처리한다.
+            return ResponseEntity.status(HttpStatus.OK).body(specialDayList);
+        } catch (Exception e) {
+            log.debug("getTagDaysByMonth error occurred!");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
+        }
+    }
+
     @PostMapping(value = "/cal/addOneTask.json", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> addOneTask(@RequestBody MultiValueMap<String, String> formData) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -170,6 +189,14 @@ public class ApiController {
         try {
             String date = formData.get("date").get(0);
             String task = formData.get("task").get(0);
+            String isEvent = formData.get("isEvent").get(0);
+            String eventCd = null;
+
+            if (isEvent.equals("false")) {
+                eventCd = "00";
+            } else if (isEvent.equals("true")) {
+                eventCd = "01";
+            }
 
             LocalDate thisDate = LocalDate.parse(date, formatter);
             
@@ -179,11 +206,24 @@ public class ApiController {
                 day = dayService.createDay(thisDate);
             }
 
-            Task createdTask = taskService.createTask(day, task, 10);
+            Task createdTask = taskService.createTask(day, task, eventCd, 10);
 
             return ResponseEntity.status(HttpStatus.OK).body(createdTask);
         } catch (Exception e) {
             log.debug("addOneTask error occurred!");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
+        }
+    }
+
+    @DeleteMapping(value = "/cal/deleteTask/{id}.json", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> deleteTask(@PathVariable int id) {
+        try {
+            taskService.deleteById(id);
+
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.debug("deleteTask error occurred!");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
         }

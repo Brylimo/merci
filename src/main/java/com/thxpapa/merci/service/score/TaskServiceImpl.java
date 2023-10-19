@@ -17,9 +17,10 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
 
     @Override
-    public Task createTask(Day day, String content, int reward) {
+    public Task createTask(Day day, String content, String eventCd, int reward) {
         Task createdTask = taskRepository.save(Task.builder()
                                 .content(content)
+                                .eventCd(eventCd)
                                 .reward(reward)
                                 .day(day)
                                 .statusCd("01")
@@ -31,5 +32,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<Task> getTasksByDay(Day day) {
         return taskRepository.findTasksByDay(day);
+    }
+
+    @Override
+    public void deleteById(int id) {
+        taskRepository.deleteById(id);
     }
 }

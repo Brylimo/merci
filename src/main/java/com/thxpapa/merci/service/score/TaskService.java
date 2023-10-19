@@ -6,6 +6,7 @@ import com.thxpapa.merci.domain.score.Task;
 import java.util.List;
 
 public interface TaskService {
-    Task createTask(Day day, String task, int reward);
+    Task createTask(Day day, String task, String eventCd, int reward);
     List<Task> getTasksByDay(Day day);
+    void deleteById(int id);
 }

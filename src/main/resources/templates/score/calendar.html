@@ -4,6 +4,7 @@
       layout:decorate="~{layout/layout}">
 <head>
     <link rel="stylesheet" th:href="@{/css/calendar.css}">
+    <link rel="stylesheet" th:href="@{/css/modal.css}">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="https://unpkg.com/moment-lunar@0.0.4/moment-lunar.min.js"></script>
@@ -57,10 +58,29 @@
                 </div>
             </div>
         </div>
+
+        <!-- modal -->
+        <div class="modal-wrapper2 draggable modal-none">
+            <div class="modal-header">
+                <button class="modal-close2">닫기</button>
+            </div>
+            <div class="modal-content">
+                <div>
+                    <input type="hidden" name="date" />
+                    <input type="hidden" name="is-event" value="true" />
+                    <input type="text" name="task" placeholder="할일을 입력해주세요." />
+
+                    <button type="submit" class="register-task">등록</button>
+                    <button class="modal-close2">닫기</button>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- js import -->
     <script th:src="@{/js/score/calendar.js}"></script>
+    <script th:src="@{/js/util/modal.js}"></script>
+
 </div>
 </body>
 </html>
