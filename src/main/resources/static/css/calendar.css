@@ -77,10 +77,13 @@
     border-radius: 6px;
     color: #21252a;
     background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .calendar-body-frame .cell-inner {
-    z-index: -1;
+    z-index: 10;
 }
 
 .calendar-body-frame .cell-special {
@@ -88,6 +91,15 @@
     text-align: center;
     border-radius: 2rem;
     background-color: #FFD5D2;
+    color: black;
+    padding: 0.2rem 0;
+}
+
+.calendar-body-frame .cell-event {
+    font-size: 1.2rem;
+    text-align: center;
+    border-radius: 2rem;
+    background-color: #96FFFF;
     color: black;
     padding: 0.2rem 0;
 }

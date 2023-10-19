@@ -6,6 +6,7 @@ import com.thxpapa.merci.domain.score.Task;
 import com.thxpapa.merci.domain.user.MerciUser;
 import com.thxpapa.merci.dto.ErrorResponse;
 import com.thxpapa.merci.dto.UserRegisterRequestDto;
+import com.thxpapa.merci.dto.score.TagDto;
 import com.thxpapa.merci.service.geo.GeoService;
 import com.thxpapa.merci.service.score.DayService;
 import com.thxpapa.merci.service.score.SpecialDayService;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -147,34 +149,36 @@ public class ApiController {
     }
 
     // calendar rest api call
-    @GetMapping(value = "/cal/getSpecialDaysByMonth.json", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getSpecialDaysByMonth(@RequestParam("year") String year, @RequestParam("month") String month) {
-        try {
-            LocalDate startDate = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month)).atDay(1);
-            LocalDate endDate = startDate.plusMonths(1).minusDays(1);
-
-            List<SpecialDay> specialDayList = specialDayService.getSpecialDaysByMonth(startDate, endDate);
-
-            return ResponseEntity.status(HttpStatus.OK).body(specialDayList);
-        } catch (Exception e) {
-            log.debug("getSpecialDaysByMonth error occurred!");
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
-        }
-    }
-
     @GetMapping(value = "/cal/getTagDaysByMonth.json", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getTagDaysByMonth(@RequestParam("year") String year, @RequestParam("month") String month) {
         try {
             LocalDate startDate = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month)).atDay(1);
             LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
+            List<TagDto> tagList = new ArrayList<>();
+
             List<SpecialDay> specialDayList = specialDayService.getSpecialDaysByMonth(startDate, endDate);
+            List<Task> eventList = taskService.getEventsByMonth(startDate, endDate);
 
-            // todo ADD TAG DAY RELATED DATA FETCHING SERVICE
+            // convert SpecialDay to TagDto
+            tagList.addAll(specialDayList.stream().map(specialDay -> {
+                return TagDto.builder()
+                        .date(specialDay.getDate())
+                        .name(specialDay.getDateName())
+                        .tagType("holiday")
+                        .build();
+            }).collect(Collectors.toList()));
 
-            // 이벤트까지 처리하고 TagDayDto에 담아서 처리한다.
-            return ResponseEntity.status(HttpStatus.OK).body(specialDayList);
+            // convert Task to TagDto
+            tagList.addAll(eventList.stream().map(event -> {
+                return TagDto.builder()
+                        .date(event.getDay().getDate())
+                        .name(event.getContent())
+                        .tagType("event")
+                        .build();
+            }).collect(Collectors.toList()));
+
+            return ResponseEntity.status(HttpStatus.OK).body(tagList);
         } catch (Exception e) {
             log.debug("getTagDaysByMonth error occurred!");
 

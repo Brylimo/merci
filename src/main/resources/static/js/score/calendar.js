@@ -37,6 +37,11 @@ $(() => {
             success: (res) => {
                 $(".modal-wrapper2").removeClass("modal-show");
                 $(".modal-wrapper2").addClass("modal-none");
+
+                const $cellTag = $("<div class='cell-event'></div>");
+                $cellTag.text(res["content"]);
+
+                $(".cell.selected").append($cellTag);
             },
             error: (error) => {
                 alert('일정 등록에 실패했습니다. \n해당 문제가 지속될 경우 관리자에게 문의하여 주십시오.');
@@ -66,6 +71,9 @@ const onClickCellHandler = function() {
     selectedElements.forEach(element => {
        $(element).removeClass("selected");
     });
+    $(".modal-wrapper2").removeClass("modal-show");
+    $(".modal-wrapper2").addClass("modal-none");
+
     $(this).addClass("selected");
 
     const targetDay = $(this).find(".cell-inner").text();
@@ -221,37 +229,36 @@ const generateCalendar = (date) => {
     let nextDayCounter = 1;
 
     $.ajax({
-        url: "/api/cal/getSpecialDaysByMonth.json",
+        url: "/api/cal/getTagDaysByMonth.json",
         type: "GET",
         data: {
             year: thisDate.getFullYear(),
             month: thisDate.getMonth() + 1
         },
         success: (res) => {
-            const holidayList = res.map(holiday => {
-               return holiday["date"] ?
+            const tagList = res.map(tag => {
+               return tag["date"] ?
                    {
-                       day: holiday["date"][2],
-                       name: holiday["dateName"]
+                       day: tag["date"][2],
+                       name: tag["name"],
+                       type: tag["tagType"]
                    } :
                    undefined;
             });
 
             for (let i = 0; i < columnCnt; i++) {
-                if (i === 0) {
+                if (i === 0) { // first row
                     for (let j = firstDayOfMonth - 1; j >= 0; j--) {
                         createCell(lastDaysInMonth - j, "obsolete");
                     }
                     for (let j = firstDayOfMonth; j < 7; j++) {
                         let $cell = null;
-                        let isHoliday = holidayList.some(holiday => holiday && holiday.day === dayCounter);
+                        let isTag = tagList.some(tag => tag && tag.day === dayCounter);
 
                         if (todayFlag && today.getDate() === dayCounter) {
-                            if (isHoliday) {
-                                const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
-                                holiday.forEach(holy => {
-                                    $cell = createCell(dayCounter, "today", holy.name);
-                                });
+                            if (isTag) {
+                                const tags = tagList.filter(obj => obj && obj.day === dayCounter);
+                                $cell = createCell(dayCounter, "today", tags);
                             } else {
                                 $cell = createCell(dayCounter, "today");
                             }
@@ -260,11 +267,9 @@ const generateCalendar = (date) => {
                                 $cell.addClass("selected");
                             }
                         } else {
-                            if (isHoliday) {
-                                const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
-                                holiday.forEach(holy => {
-                                    $cell = createCell(dayCounter, "normal", holy.name);
-                                });
+                            if (isTag) {
+                                const tags = tagList.filter(obj => obj && obj.day === dayCounter);
+                                $cell = createCell(dayCounter, "normal", tags);
                             } else {
                                 $cell = createCell(dayCounter, "normal");
                             }
@@ -278,8 +283,11 @@ const generateCalendar = (date) => {
                         }
 
                         // process holiday
-                        if (isHoliday) {
-                            $cell.css("color", "red");
+                        if (isTag) {
+                            const tag = tagList.filter(obj => obj && obj.day === dayCounter);
+                            tag.forEach(tg => {
+                               if (tg["type"] === "holiday") $cell.css("color", "red");
+                            });
                         }
 
                         dayCounter++;
@@ -287,15 +295,13 @@ const generateCalendar = (date) => {
                 } else {
                     for (let j = 0; j < 7; j++) {
                         let $cell = null;
-                        let isHoliday = holidayList.some(holiday => holiday && holiday.day === dayCounter);
+                        let isTag = tagList.some(tag => tag && tag.day === dayCounter);
 
                         if (dayCounter <= daysInMonth) {
                             if (todayFlag && today.getDate() === dayCounter) {
-                                if (isHoliday) {
-                                    const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
-                                    holiday.forEach(holy => {
-                                        $cell = createCell(dayCounter, "today", holy.name);
-                                    });
+                                if (isTag) {
+                                    const tags = tagList.filter(obj => obj && obj.day === dayCounter);
+                                    $cell = createCell(dayCounter, "today", tags);
                                 } else {
                                     $cell = createCell(dayCounter, "today");
                                 }
@@ -304,11 +310,9 @@ const generateCalendar = (date) => {
                                     $cell.addClass("selected");
                                 }
                             } else {
-                                if (isHoliday) {
-                                    const holiday = holidayList.filter(obj => obj && obj.day === dayCounter);
-                                    holiday.forEach(holy => {
-                                        $cell = createCell(dayCounter, "normal", holy.name);
-                                    });
+                                if (isTag) {
+                                    const tags = tagList.filter(obj => obj && obj.day === dayCounter);
+                                    $cell = createCell(dayCounter, "normal", tags);
                                 } else {
                                     $cell = createCell(dayCounter, "normal");
                                 }
@@ -322,8 +326,11 @@ const generateCalendar = (date) => {
                             }
 
                             // process holiday
-                            if (isHoliday) {
-                                $cell.css("color", "red");
+                            if (isTag) {
+                                const tag = tagList.filter(obj => obj && obj.day === dayCounter);
+                                tag.forEach(tg => {
+                                    if (tg["type"] === "holiday") $cell.css("color", "red");
+                                });
                             }
 
                             dayCounter++;
@@ -406,7 +413,7 @@ const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();
 }
 
-const createCell = (day, kind, holiday) => {
+const createCell = (day, kind, tagList) => {
     let $cell = null;
 
     if (kind === "normal") {
@@ -426,11 +433,18 @@ const createCell = (day, kind, holiday) => {
 
     $cell.append($cellInner);
 
-    if (holiday) {
-        const $cellSpecial = $("<div class='cell-special'></div>");
-        $cellSpecial.text(holiday);
+    if (tagList) {
+        tagList.forEach(tag => {
+            let $cellTag = null;
+            if (tag.type === "holiday") {
+                $cellTag = $("<div class='cell-special'></div>");
+            } else if (tag.type === "event") {
+                $cellTag = $("<div class='cell-event'></div>");
+            }
+            $cellTag.text(tag.name);
 
-        $cell.append($cellSpecial);
+            $cell.append($cellTag);
+        })
     }
     $(".calendar-body-frame").append($cell);
 
