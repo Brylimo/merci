@@ -74,7 +74,7 @@
     position: relative;
     padding: 0.3rem;
     font-size: 16px;
-    border-radius: 6px;
+    border-radius: 0.6rem;
     color: #21252a;
     background-color: transparent;
     display: flex;
@@ -91,6 +91,15 @@
     text-align: center;
     border-radius: 2rem;
     background-color: #FFD5D2;
+    color: black;
+    padding: 0.2rem 0;
+}
+
+.calendar-body-frame .cell-anniversary {
+    font-size: 1.2rem;
+    text-align: center;
+    border-radius: 2rem;
+    background-color: #98FB98;
     color: black;
     padding: 0.2rem 0;
 }

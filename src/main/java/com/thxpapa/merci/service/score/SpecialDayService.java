@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface SpecialDayService {
-    void updateSpecialDay();
+    void updateHoliday();
+    void updateAnniversary();
     List<SpecialDay> getSpecialDaysByMonth(LocalDate startDate, LocalDate endDate);
 }

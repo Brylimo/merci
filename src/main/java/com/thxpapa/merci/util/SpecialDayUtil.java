@@ -27,13 +27,13 @@ public class SpecialDayUtil {
     @Value("${datago.api.ekey}")
     private String eKey;
 
-    public List<SpecialDayDto> getRestDeInfo(String solYear) {
+    public List<SpecialDayDto> getHoliDeInfo(String solYear) {
         try {
             HttpURLConnection conn = null;
             JsonParser jsonParser = new JsonParser();
             ObjectMapper objectMapper = new ObjectMapper();
 
-            StringBuilder urlBuilder = new StringBuilder(specialUrl + "/openapi/service/SpcdeInfoService/getRestDeInfo");
+            StringBuilder urlBuilder = new StringBuilder(specialUrl + "/openapi/service/SpcdeInfoService/getHoliDeInfo");
             urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + eKey);
             urlBuilder.append("&" + URLEncoder.encode("solYear","UTF-8") + "=" + URLEncoder.encode(solYear, "UTF-8"));
             urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("200", "UTF-8"));
@@ -63,7 +63,48 @@ public class SpecialDayUtil {
             }
             return null;
         } catch(Exception e) {
-            log.error("getRestDeInfo error occurred!");
+            log.error("getHoliDeInfo error occurred!");
+            return null;
+        }
+    }
+
+    public List<SpecialDayDto> getAnniversaryInfo(String solYear) {
+        try {
+            HttpURLConnection conn = null;
+            JsonParser jsonParser = new JsonParser();
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            StringBuilder urlBuilder = new StringBuilder(specialUrl + "/openapi/service/SpcdeInfoService/getAnniversaryInfo");
+            urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + eKey);
+            urlBuilder.append("&" + URLEncoder.encode("solYear","UTF-8") + "=" + URLEncoder.encode(solYear, "UTF-8"));
+            urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("200", "UTF-8"));
+
+            conn = getConnection(urlBuilder.toString());
+            if (conn == null) return null;
+
+            String line;
+            BufferedReader br = null;
+            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+
+                StringBuilder sb = new StringBuilder();
+                while((line = br.readLine())!=null) {
+                    sb.append(line);
+                }
+
+                XmlMapper xmlMapper = new XmlMapper();
+                JsonNode jsonNode = xmlMapper.readTree(sb.toString());
+
+                String jsonString = objectMapper.writeValueAsString(jsonNode);
+
+                JsonObject json = (JsonObject) jsonParser.parse(jsonString);
+                JsonArray list = ((JsonObject) json.get("body")).getAsJsonObject("items").getAsJsonArray("item");
+
+                return Arrays.asList(new ObjectMapper().readValue(list.toString(), SpecialDayDto[].class));
+            }
+            return null;
+        } catch(Exception e) {
+            log.error("getAnniversaryInfo error occurred!");
             return null;
         }
     }

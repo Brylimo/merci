@@ -23,6 +23,10 @@ public class SpecialDay {
     @Column(name="special_day_uid")
     private String specialDayUid;
 
+    @Comment("데이터셋 식별자")
+    @Column(name="dat_st_id")
+    private String datStId;
+
     @Comment("날짜")
     @Column(name="date")
     private LocalDate date;
@@ -53,8 +57,9 @@ public class SpecialDay {
     static public final String idSplitter = "::";
 
     @Builder
-    public SpecialDay(String specialDayUid, LocalDate date, String dateName, Boolean holidayCd, String statusCd) {
+    public SpecialDay(String specialDayUid, String datStId, LocalDate date, String dateName, Boolean holidayCd, String statusCd) {
         this.specialDayUid = specialDayUid;
+        this.datStId = datStId;
         this.date = date;
         this.dateName = dateName;
         this.holidayCd = holidayCd;

@@ -162,6 +162,14 @@ public class ApiController {
 
             // convert SpecialDay to TagDto
             tagList.addAll(specialDayList.stream().map(specialDay -> {
+                if (!specialDay.getHolidayCd()) {
+                    return TagDto.builder()
+                            .date(specialDay.getDate())
+                            .name(specialDay.getDateName())
+                            .tagType("anniversary")
+                            .build();
+                }
+
                 return TagDto.builder()
                         .date(specialDay.getDate())
                         .name(specialDay.getDateName())

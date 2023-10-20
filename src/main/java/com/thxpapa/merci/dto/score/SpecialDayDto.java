@@ -12,5 +12,6 @@ public class SpecialDayDto {
     private String dateName;
     private String isHoliday;
     private String locdate;
+    private String remarks;
     private String seq;
 }

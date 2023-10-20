@@ -30,7 +30,8 @@ public class SchedulerDaemon {
         log.debug("fetchSpecialDayData scheduler starts!");
 
         try {
-            specialDayService.updateSpecialDay();
+            specialDayService.updateHoliday();
+            specialDayService.updateAnniversary();
         } catch (Exception e) {
             log.debug("Failed fetching special day data");
         }

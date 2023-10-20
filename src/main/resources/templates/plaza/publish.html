@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/publish.css}">
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- common -->
+        <div th:include="common/header"></div>
+        <div th:include="common/sidebar"></div>
+
+        <section class="content">
+            <div class="publish-wrapper">
+                <div class="workplace-wrapper">
+                    <div class="title">
+                        <input type="text" name="title" placeholder="제목을 입력하세요" />
+                    </div>
+                    <div class="hashtag">
+                        <input type="text" name="hashtag-txt" placeholder="태그를 입력하세요" />
+                    </div>
+                    <div class="workplace">
+                        <div class="bar">
+                            toolbar
+                        </div>
+                        <div class="wp">
+                            <textarea name="wp-area" placeholder="내용을 작성해주세요"></textarea>
+                        </div>
+                    </div>
+                    <div class="publish-footer-wrapper">
+                        <div class="publish-footer">
+                            footer
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-wrapper">
+                    <div class="title">
+                        <span></span>
+                    </div>
+                    <div class="workplace">
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- js import -->
+        <script th:src="@{/js/plaza/publish.js}"></script>
+    </div>
+</body>
+</html>
