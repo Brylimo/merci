@@ -56,27 +56,57 @@
 
 .workplace-wrapper .workplace {
     width: 100%;
-    height: 30rem;
+    height: calc(100vh - 24.1rem);
 }
 
-.workplace-wrapper .publish-footer-wrapper {
-    width: 100%;
-    height: 4rem;
+.workplace-wrapper .workplace .wp {
+    padding: 1rem;
+    height: calc(100% - 1.92rem);
+}
+
+.wp-core {
+    height: 100%;
     position: relative;
 }
 
-.workplace-wrapper .publish-footer-wrapper .publish-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+.workplace-wrapper .workplace .wp .wp-code {
+    position: relative;
 }
 
-.workplace-wrapper .wp textarea {
-    width: 100%;
-    border: none;
-    outline: none;
-    resize: none;
+.workplace-wrapper .publish-footer {
+    position: fixed;
+    bottom: 0;
+    left: 8.9rem;
+    height: 6.4rem;
+    background-color: gainsboro;
+    display: flex;
+    justify-content: space-between;
+}
+
+.workplace-wrapper .wp .wp-textarea-wrapper {
+    overflow: hidden;
+    position: relative;
+    width: 300px;
+    height: 300px;
+    top: 0;
+    left: 0;
+}
+
+.workplace-wrapper .wp .cursors {
+    position: relative;
+    visibility: hidden;
+}
+
+.cursors.cursor-visible {
+    visibility: visible !important;
+}
+
+.cursors .cursor {
+    position: absolute;
+    height: 2.7rem;
+    top: 0;
+    border-left: 0.1rem solid #000;
+    border-right: none;
 }
 
 /*preview-wrapper*/
@@ -90,4 +120,3 @@
     height: 100%;
     font-size: 4rem;
 }
-
