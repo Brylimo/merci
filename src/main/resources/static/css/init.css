@@ -54,7 +54,8 @@ table {
 }
 body {
     font-weight: 300;
-    font-family: 'Source Sans Pro', sans-serif;
+    /*font-family: 'Source Sans Pro', sans-serif;*/
+    font-family: "Courier New", monospace;
     line-height: 1.2;
 }
 a {

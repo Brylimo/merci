@@ -44,7 +44,19 @@ $(() => {
         }
     });
 
-    $(".wp-textarea-wrapper textarea").on("keyup", (event) => {
+    $(".wp-textarea-wrapper textarea").on("keydown", (event) => {
+        const $textarea = $(".wp-textarea-wrapper textarea");
+        const $targetSpan = $(".wp-code .wp-line span");
+        const $wpWrapper = $(".wp-textarea-wrapper");
+        const $wpDraftSpan = $(".wp-code-draft span");
+        const $cursor = $(".wp-core .cursors .cursor")
+
+        if (event.key === "Backspace") {
+
+        }
+    });
+
+    $(".wp-textarea-wrapper textarea").on("input", (event) => {
         const $textarea = $(".wp-textarea-wrapper textarea");
         const $targetSpan = $(".wp-code .wp-line span");
         const $wpWrapper = $(".wp-textarea-wrapper");
@@ -56,6 +68,7 @@ $(() => {
             let lastChar = $targetSpan.text().charAt(BlogUtil.cIndex);
             console.log(lastChar);
             const fontSize = $targetSpan.css("font-size");
+            console.log("f", fontSize)
             $wpDraftSpan.css("font-size", fontSize);
             BlogUtil.cIndex -= 1;
 
@@ -69,6 +82,7 @@ $(() => {
             let width = $wpDraftSpan.get(0).offsetWidth;
             $wpDraftSpan.text('');
             $textarea.val('');
+            BlogUtil.tIndex = 0;
 
             $wpWrapper.css("left", parseInt($cursor.css("left"), 10) - width + "px");
             $cursor.css("left", parseInt($cursor.css("left"), 10) - width + "px");
@@ -130,26 +144,45 @@ $(() => {
 
                 $wpDraftSpan.text('');
 
-                $targetSpan.text($textarea.val());
+                $targetSpan.text($textarea.val().charAt(BlogUtil.tIndex));
+                BlogUtil.tIndex++;
 
                 $cursor.css("left", parseInt($cursor.css("left"), 10) + width + "px");
+                $wpWrapper.css("left", parseInt($cursor.css("left"), 10) + width + "px");
             }
         } else {
             BlogUtil.spaceCd = '00';
+            let lastChar = $textarea.val().charAt($textarea.val().length - 1);
             const fontSize = $targetSpan.css("font-size");
             $wpDraftSpan.css("font-size", fontSize);
 
-            let textContent = $textarea.val();
-            let width = null;
-
-            $wpDraftSpan.text(textContent);
-            width = $wpDraftSpan.get(0).offsetWidth;
-
+            $wpDraftSpan.text(lastChar);
+            let width = $wpDraftSpan[0].getBoundingClientRect().width;
             $wpDraftSpan.text('');
 
-            $targetSpan.text($textarea.val());
+            if (BlogUtil.containsKorean(lastChar)) {
+                if ($textarea.val().length - BlogUtil.cIndex) {
+                    $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex));
 
-            $cursor.css("left", parseInt($wpWrapper.css("left"), 10) + width + "px");
+                    $cursor.css("left", parseFloat($cursor.css("left")) + width + "px");
+                    $wpWrapper.css("left", parseFloat($wpWrapper.css("left")) + width + "px");
+                    BlogUtil.cIndex++;
+                } else {
+                    $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex));
+                }
+
+                if (BlogUtil.cIndex - BlogUtil.tIndex === 2) {
+                    BlogUtil.tIndex++;
+                }
+            } else {
+                $targetSpan.text($targetSpan.text() + lastChar);
+
+                BlogUtil.tIndex++;
+                BlogUtil.cIndex++;
+
+                $cursor.css("left", parseFloat($cursor.css("left")) + width + "px");
+                $wpWrapper.css("left", parseFloat($wpWrapper.css("left")) + width + "px");
+            }
         }
     });
 
