@@ -1,6 +1,8 @@
 class BlogUtil {
     static timers = [];
     static isActive = false;
+    static cIndex = 0;
+    static spaceCd = "00";
 
     static timerFn() {
         const target = $(".wp .cursors");

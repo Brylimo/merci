@@ -48,16 +48,109 @@ $(() => {
         const $textarea = $(".wp-textarea-wrapper textarea");
         const $targetSpan = $(".wp-code .wp-line span");
         const $wpWrapper = $(".wp-textarea-wrapper");
+        const $wpDraftSpan = $(".wp-code-draft span");
         const $cursor = $(".wp-core .cursors .cursor")
 
         if (event.keyCode === 37) {
-            $targetSpan.val().slice(0, -1);
-        } else {
-            $targetSpan.text($textarea.val());
-        }
+            BlogUtil.cIndex += $textarea.val().length > 0 ? $textarea.val().length - 1 : 0;
+            let lastChar = $targetSpan.text().charAt(BlogUtil.cIndex);
+            console.log(lastChar);
+            const fontSize = $targetSpan.css("font-size");
+            $wpDraftSpan.css("font-size", fontSize);
+            BlogUtil.cIndex -= 1;
 
-        $wpWrapper.css("left", $targetSpan.width() + "px");
-        $cursor.css("left", $targetSpan.width() + "px");
+            console.log($targetSpan.text())
+            if (lastChar === ' ') {
+                $wpDraftSpan.html('&nbsp;');
+            } else {
+                $wpDraftSpan.text(lastChar);
+            }
+
+            let width = $wpDraftSpan.get(0).offsetWidth;
+            $wpDraftSpan.text('');
+            $textarea.val('');
+
+            $wpWrapper.css("left", parseInt($cursor.css("left"), 10) - width + "px");
+            $cursor.css("left", parseInt($cursor.css("left"), 10) - width + "px");
+        } else if (event.keyCode === 32) { // space bar
+            if (BlogUtil.spaceCd === '01') {
+                BlogUtil.spaceCd = '02';
+                $targetSpan.text($textarea.val().trim());
+                const $spaceA = $("<span class='space-a'> </span>");
+                const $newLine = $("<span>&nbsp;</span>");
+
+                $newLine.addClass("new-line");
+                $targetSpan.parent().append($spaceA);
+                $targetSpan.parent().append($newLine);
+
+                let width = null;
+
+                $wpDraftSpan.html('&nbsp;');
+                width = $wpDraftSpan.get(0).offsetWidth;
+                $wpDraftSpan.text('');
+
+                $cursor.css("left", parseInt($cursor.css("left"), 10) + width + "px");
+
+            } else if (BlogUtil.spaceCd === '02') {
+                let $newLine = null;
+                const lastOne = $targetSpan.parent().find(".new-line");
+
+                lastOne.removeClass("new-line");
+                if (lastOne.html() === '&nbsp;') {
+                    lastOne.addClass("space-b");
+                    $newLine = $("<span> </span>");
+                    $newLine.addClass("new-line");
+                } else if (lastOne.html() === ' ') {
+                    lastOne.addClass("space-a");
+                    $newLine = $("<span>&nbsp;</span>");
+                    $newLine.addClass("new-line");
+                }
+
+                $targetSpan.parent().append($newLine);
+
+                let width = null;
+
+                $wpDraftSpan.html('&nbsp;');
+                width = $wpDraftSpan.get(0).offsetWidth;
+                $wpDraftSpan.text('');
+
+                $cursor.css("left", parseInt($cursor.css("left"), 10) + width + "px");
+            } else {
+                if (BlogUtil.spaceCd === '02') {
+                    
+                }
+
+                BlogUtil.spaceCd = '01';
+                const fontSize = $targetSpan.css("font-size");
+                $wpDraftSpan.css("font-size", fontSize);
+                let width = null;
+
+                $wpDraftSpan.html('&nbsp;');
+                width = $wpDraftSpan.get(0).offsetWidth;
+
+                $wpDraftSpan.text('');
+
+                $targetSpan.text($textarea.val());
+
+                $cursor.css("left", parseInt($cursor.css("left"), 10) + width + "px");
+            }
+        } else {
+            BlogUtil.spaceCd = '00';
+            const fontSize = $targetSpan.css("font-size");
+            $wpDraftSpan.css("font-size", fontSize);
+
+            let textContent = $textarea.val();
+            let width = null;
+
+            $wpDraftSpan.text(textContent);
+            width = $wpDraftSpan.get(0).offsetWidth;
+
+            $wpDraftSpan.text('');
+
+            $targetSpan.text($textarea.val());
+
+            $cursor.css("left", parseInt($wpWrapper.css("left"), 10) + width + "px");
+        }
     });
 
     $(".wp-textarea-wrapper textarea").on("blur", function (event) {

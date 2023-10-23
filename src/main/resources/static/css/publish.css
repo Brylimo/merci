@@ -92,6 +92,15 @@
     left: 0;
 }
 
+.workplace-wrapper .wp .wp-code-draft {
+    overflow: hidden;
+    position: relative;
+}
+
+.workplace-wrapper .wp .wp-code-draft span {
+    position: absolute;
+}
+
 .workplace-wrapper .wp .cursors {
     position: relative;
     visibility: hidden;
