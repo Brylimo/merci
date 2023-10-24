@@ -2,7 +2,6 @@ class BlogUtil {
     static timers = [];
     static isActive = false;
     static isOnDelete = false;
-    static isOnSpace = false;
     static cIndex = 0; // cursor index
     static tIndex = 0; // text index
     static sIndex = 0; // spot index
