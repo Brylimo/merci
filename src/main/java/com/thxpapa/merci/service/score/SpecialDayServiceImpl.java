@@ -27,7 +27,7 @@ public class SpecialDayServiceImpl implements SpecialDayService {
     @Override
     public void updateHoliday() { // holiday + anniversary(제헌절)
         final int startYear = 2004;
-        final int endYear = LocalDate.now().plusYears(2).getYear();
+        final int endYear = LocalDate.now().plusYears(1).getYear();
 
         try {
             Long idx = 0L;
@@ -151,6 +151,68 @@ public class SpecialDayServiceImpl implements SpecialDayService {
                 }
             }
 
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    @Override
+    public void update24Divisions() {
+        final int startYear = 2004;
+        final int endYear = LocalDate.now().plusYears(1).getYear();
+
+        try {
+            Long idx = 0L;
+            LocalDate ld = null;
+            String lastId = specialDayRepository.selectLastId();
+            String divisionsLastId = specialDayRepository.selectLastIdByDatStId("24DIVISIONS");
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+            if (lastId!=null) {
+                String[] buff = lastId.split(SpecialDay.idSplitter);
+                String[] divBuff = null;
+
+                if (divisionsLastId!=null) {
+                    divBuff = divisionsLastId.split(SpecialDay.idSplitter);
+                }
+
+                if (buff.length > 1) {
+                    if (divBuff!=null&&divBuff.length > 1) {
+                        ld = LocalDate.parse(divBuff[0], formatter);
+                    }
+                    idx = Long.parseLong(buff[1]);
+                }
+            }
+
+            for (int solYear = startYear; solYear <= endYear; solYear++) {
+                if (ld != null && solYear < ld.getYear()) {
+                    continue;
+                }
+
+                log.info(solYear + " year 24divisions data is being stored..");
+
+                List<SpecialDayDto> specialDayList = specialDayUtil.get24DivisionsInfo(String.valueOf(solYear));
+
+                for (SpecialDayDto element: specialDayList) {
+                    LocalDate date = LocalDate.parse(element.getLocdate(), formatter);
+
+                    if (ld != null && !date.isAfter(ld)) {
+                        continue;
+                    }
+
+                    Boolean isHoliday = element.getIsHoliday().equals("N") ? false : true;
+
+                    specialDayRepository.save(SpecialDay.builder()
+                            .specialDayUid(element.getLocdate()+SpecialDay.idSplitter+(++idx))
+                            .datStId("24DIVISIONS")
+                            .dateName(element.getDateName())
+                            .holidayCd(isHoliday)
+                            .date(date)
+                            .statusCd("01")
+                            .build());
+                }
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
         }

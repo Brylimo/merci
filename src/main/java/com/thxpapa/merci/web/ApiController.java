@@ -162,7 +162,13 @@ public class ApiController {
 
             // convert SpecialDay to TagDto
             tagList.addAll(specialDayList.stream().map(specialDay -> {
-                if (!specialDay.getHolidayCd()) {
+                if (specialDay.getDatStId().equals("24DIVISIONS")) {
+                    return TagDto.builder()
+                            .date(specialDay.getDate())
+                            .name(specialDay.getDateName())
+                            .tagType("division")
+                            .build();
+                } else if (!specialDay.getHolidayCd()) {
                     return TagDto.builder()
                             .date(specialDay.getDate())
                             .name(specialDay.getDateName())

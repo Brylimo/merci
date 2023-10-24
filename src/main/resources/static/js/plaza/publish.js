@@ -51,42 +51,29 @@ $(() => {
         const $wpDraftSpan = $(".wp-code-draft span");
         const $cursor = $(".wp-core .cursors .cursor")
 
+        /*
+        * usual backspace keyboard btn pressed event is processed here
+        * */
         if (event.key === "Backspace") {
+            if (BlogUtil.cIndex <= 0) return;
 
-        }
-    });
+            BlogUtil.cIndex--;
+            BlogUtil.tIndex--;
 
-    $(".wp-textarea-wrapper textarea").on("input", (event) => {
-        const $textarea = $(".wp-textarea-wrapper textarea");
-        const $targetSpan = $(".wp-code .wp-line span");
-        const $wpWrapper = $(".wp-textarea-wrapper");
-        const $wpDraftSpan = $(".wp-code-draft span");
-        const $cursor = $(".wp-core .cursors .cursor")
+            const targetChar = $targetSpan.text().charAt(BlogUtil.cIndex);
 
-        if (event.keyCode === 37) {
-            BlogUtil.cIndex += $textarea.val().length > 0 ? $textarea.val().length - 1 : 0;
-            let lastChar = $targetSpan.text().charAt(BlogUtil.cIndex);
-            console.log(lastChar);
-            const fontSize = $targetSpan.css("font-size");
-            console.log("f", fontSize)
-            $wpDraftSpan.css("font-size", fontSize);
-            BlogUtil.cIndex -= 1;
+            const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
 
-            console.log($targetSpan.text())
-            if (lastChar === ' ') {
-                $wpDraftSpan.html('&nbsp;');
-            } else {
-                $wpDraftSpan.text(lastChar);
-            }
+            $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cIndex) + $textarea.val().slice(BlogUtil.cIndex + 1));
 
-            let width = $wpDraftSpan.get(0).offsetWidth;
-            $wpDraftSpan.text('');
-            $textarea.val('');
-            BlogUtil.tIndex = 0;
+            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
 
-            $wpWrapper.css("left", parseInt($cursor.css("left"), 10) - width + "px");
-            $cursor.css("left", parseInt($cursor.css("left"), 10) - width + "px");
-        } else if (event.keyCode === 32) { // space bar
+            BlogUtil.isOnDelete = true;
+        } else if (event.key == " " || event.key == "Spacebar" || event.key == 32) {
+            /*
+            * spacebar keyboard btn pressed event is processed here
+            * */
+
             if (BlogUtil.spaceCd === '01') {
                 BlogUtil.spaceCd = '02';
                 $targetSpan.text($textarea.val().trim());
@@ -97,13 +84,8 @@ $(() => {
                 $targetSpan.parent().append($spaceA);
                 $targetSpan.parent().append($newLine);
 
-                let width = null;
-
-                $wpDraftSpan.html('&nbsp;');
-                width = $wpDraftSpan.get(0).offsetWidth;
-                $wpDraftSpan.text('');
-
-                $cursor.css("left", parseInt($cursor.css("left"), 10) + width + "px");
+                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
 
             } else if (BlogUtil.spaceCd === '02') {
                 let $newLine = null;
@@ -130,42 +112,93 @@ $(() => {
 
                 $cursor.css("left", parseInt($cursor.css("left"), 10) + width + "px");
             } else {
-                if (BlogUtil.spaceCd === '02') {
-                    
-                }
-
                 BlogUtil.spaceCd = '01';
-                const fontSize = $targetSpan.css("font-size");
-                $wpDraftSpan.css("font-size", fontSize);
-                let width = null;
 
-                $wpDraftSpan.html('&nbsp;');
-                width = $wpDraftSpan.get(0).offsetWidth;
+                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
 
-                $wpDraftSpan.text('');
-
-                $targetSpan.text($textarea.val().charAt(BlogUtil.tIndex));
+                $targetSpan.text($targetSpan.text() + ' ');
                 BlogUtil.tIndex++;
+                BlogUtil.cIndex++;
 
-                $cursor.css("left", parseInt($cursor.css("left"), 10) + width + "px");
-                $wpWrapper.css("left", parseInt($cursor.css("left"), 10) + width + "px");
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
             }
-        } else {
-            BlogUtil.spaceCd = '00';
-            let lastChar = $textarea.val().charAt($textarea.val().length - 1);
-            const fontSize = $targetSpan.css("font-size");
-            $wpDraftSpan.css("font-size", fontSize);
 
-            $wpDraftSpan.text(lastChar);
-            let width = $wpDraftSpan[0].getBoundingClientRect().width;
+            BlogUtil.isOnSpace = true;
+        }
+    });
+
+    $(".wp-textarea-wrapper textarea").on("input", (event) => {
+        const $textarea = $(".wp-textarea-wrapper textarea");
+        const $targetSpan = $(".wp-code .wp-line span");
+        const $wpWrapper = $(".wp-textarea-wrapper");
+        const $wpDraftSpan = $(".wp-code-draft span");
+        const $cursor = $(".wp-core .cursors .cursor")
+
+        /*
+        * if the backspace keyboard btn is pressed, and properly it is recognized as an event,
+        *  we won't process any codes in this event
+        * */
+        if (BlogUtil.isOnDelete) {
+            if (BlogUtil.isOnDelete) BlogUtil.isOnDelete = false;
+            return;
+        } else if (BlogUtil.isOnSpace) {
+            if (BlogUtil.isOnSpace) BlogUtil.isOnSpace = false;
+            return;
+        }
+
+        if (event.keyCode === 37) {
+            BlogUtil.cIndex += $textarea.val().length > 0 ? $textarea.val().length - 1 : 0;
+            let lastChar = $targetSpan.text().charAt(BlogUtil.cIndex);
+            console.log(lastChar);
+            const fontSize = $targetSpan.css("font-size");
+            console.log("f", fontSize)
+            $wpDraftSpan.css("font-size", fontSize);
+            BlogUtil.cIndex -= 1;
+
+            console.log($targetSpan.text())
+            if (lastChar === ' ') {
+                $wpDraftSpan.html('&nbsp;');
+            } else {
+                $wpDraftSpan.text(lastChar);
+            }
+
+            let width = $wpDraftSpan.get(0).offsetWidth;
             $wpDraftSpan.text('');
+            $textarea.val('');
+            BlogUtil.tIndex = 0;
+
+            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+        } else {
+            /* process normal keyword letter like alphabet or korean */
+            BlogUtil.spaceCd = '00';
+
+            /*
+            * this if statement is used when the backspace keyboard btn is pressed
+            * there's some specific weird cases(korean) when the event can't recognize if the backspace btn is pressed
+            * this if statement is used for this case
+            * */
+            if (BlogUtil.sIndex + $textarea.val().length === BlogUtil.sIndex + BlogUtil.tIndex) {
+                const targetChar = $targetSpan.text().charAt($targetSpan.text().length - 1);
+
+                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
+
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex + 1));
+
+                BlogUtil.cIndex--;
+
+                return;
+            }
+
+            let lastChar = $textarea.val().charAt($textarea.val().length - 1);
+            const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, lastChar);
 
             if (BlogUtil.containsKorean(lastChar)) {
                 if ($textarea.val().length - BlogUtil.cIndex) {
                     $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex));
 
-                    $cursor.css("left", parseFloat($cursor.css("left")) + width + "px");
-                    $wpWrapper.css("left", parseFloat($wpWrapper.css("left")) + width + "px");
+                    BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
                     BlogUtil.cIndex++;
                 } else {
                     $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex));
@@ -180,8 +213,7 @@ $(() => {
                 BlogUtil.tIndex++;
                 BlogUtil.cIndex++;
 
-                $cursor.css("left", parseFloat($cursor.css("left")) + width + "px");
-                $wpWrapper.css("left", parseFloat($wpWrapper.css("left")) + width + "px");
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
             }
         }
     });

@@ -442,6 +442,8 @@ const createCell = (day, kind, tagList) => {
                 $cellTag = $("<div class='cell-event'></div>");
             } else if (tag.type === "anniversary") {
                 $cellTag = $("<div class='cell-anniversary'></div>");
+            } else if (tag.type === "division") {
+                $cellTag = $("<div class='cell-division'></div>");
             }
             $cellTag.text(tag.name);
 

@@ -8,5 +8,6 @@ import java.util.List;
 public interface SpecialDayService {
     void updateHoliday();
     void updateAnniversary();
+    void update24Divisions();
     List<SpecialDay> getSpecialDaysByMonth(LocalDate startDate, LocalDate endDate);
 }
