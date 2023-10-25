@@ -1,9 +1,8 @@
 class BlogUtil {
     static timers = [];
     static isActive = false;
-    static isOnDelete = false;
-    static cIndex = 0; // cursor index
-    static tIndex = 0; // text index
+    static cursorIndex = 0; // cursor index
+    static textIndex = 0; // text index
     static sIndex = 0; // spot index
     static spaceCd = "00";
 
@@ -62,5 +61,14 @@ class BlogUtil {
     static moveCursorOneStepHorizontally($cursor, $wpWrapper, width) {
         $cursor.css("left", parseFloat($cursor.css("left")) + width + "px");
         $wpWrapper.css("left", parseFloat($wpWrapper.css("left")) + width + "px");
+        if (width > 0) {
+            BlogUtil.cursorIndex++;
+        } else if (width < 0) {
+            BlogUtil.cursorIndex--;
+        }
+
+        if (BlogUtil.cursorIndex - BlogUtil.textIndex === 2) {
+            BlogUtil.textIndex++;
+        }
     }
 }

@@ -23,55 +23,102 @@ $(() => {
     });
 
     $(document).on("keydown", (event) => {
-        if (BlogUtil.isActive) {
-
-            if (event.keyCode === 13) { // enter
-                const $wpCodeLine = $("<pre class='wp-line'><span></span></pre>");
-                $(".wp-code").append($wpCodeLine);
-            }
-        }
-    });
-
-    $(".wp-textarea-wrapper textarea").on("keydown", (event) => {
         const $textarea = $(".wp-textarea-wrapper textarea");
-        const $targetSpan = $(".wp-code .wp-line span");
         const $wpWrapper = $(".wp-textarea-wrapper");
         const $wpDraftSpan = $(".wp-code-draft span");
         const $cursor = $(".wp-core .cursors .cursor");
+        let $targetSpan = $(".wp-code .wp-line span");
+
+        if (BlogUtil.isActive) {
+            if (event.key === "ArrowLeft") { // press ArrowLeft keyboard btn -> one step move cursor to left
+                if (BlogUtil.cursorIndex < 1) return;
+                $textarea.val('');
+
+                let leftChar = $targetSpan.text().charAt(BlogUtil.cursorIndex - 1);
+                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, leftChar);
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+                BlogUtil.textIndex = BlogUtil.cursorIndex;
+            } else if (event.key === "ArrowRight") { // press ArrowRight keyboard btn -> one step move cursor to right
+                if (BlogUtil.cursorIndex >= $targetSpan.text().length) return;
+                $textarea.val('');
+
+                let rightChar = $targetSpan.text().charAt(BlogUtil.cursorIndex);
+                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, rightChar);
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+                BlogUtil.textIndex = BlogUtil.cursorIndex;
+            }
+
+            /*if (event.keyCode === 13) { // enter
+                const $wpCodeLine = $("<pre class='wp-line'><span></span></pre>");
+                $(".wp-code").append($wpCodeLine);
+            }*/
+        }
+    });
+
+    $(".wp-textarea-wrapper textarea").on("input", (event) => {
+        const $textarea = $(".wp-textarea-wrapper textarea");
+        const $wpWrapper = $(".wp-textarea-wrapper");
+        const $wpDraftSpan = $(".wp-code-draft span");
+        const $cursor = $(".wp-core .cursors .cursor");
+        let $targetSpan = $(".wp-code .wp-line span");
+
+        let lastChar = $textarea.val().charAt($textarea.val().length - 1);
+        const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, lastChar);
 
         /*
-        * usual backspace keyboard btn pressed event is processed here
+        * this if statement is used when the backspace keyboard btn is pressed
+        * there's some specific weird cases(korean) when the event can't recognize if the backspace btn is pressed
+        * this if statement is used for this case
         * */
-        if (event.key === "Backspace" || event.keyCode == 8) {
-            if (BlogUtil.cIndex <= 0) return;
+        if (BlogUtil.sIndex + $textarea.val().length == BlogUtil.sIndex + BlogUtil.textIndex) {
+            if (BlogUtil.cursorIndex < 1) return;
 
-            BlogUtil.cIndex--;
-            BlogUtil.tIndex--;
-
-            const targetChar = $targetSpan.text().charAt(BlogUtil.cIndex);
+            const targetChar = $targetSpan.text().charAt($targetSpan.text().length - 1);
 
             const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
 
-            $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cIndex) + $textarea.val().slice(BlogUtil.cIndex + 1));
-
             BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
 
-            BlogUtil.isOnDelete = true;
-        }
-    });
+            $targetSpan.text($targetSpan.text().slice(0, BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex + 1));
 
-    $(".wp-textarea-wrapper textarea").on("keyup", (event) => {
-        const $textarea = $(".wp-textarea-wrapper textarea");
-        const $targetSpan = $(".wp-code .wp-line span");
-        const $wpWrapper = $(".wp-textarea-wrapper");
-        const $wpDraftSpan = $(".wp-code-draft span");
-        const $cursor = $(".wp-core .cursors .cursor");
-
-        if (event.key == " " || event.key == "Spacebar" || event.keyCode == 32) {
+            return;
+        } else if (BlogUtil.sIndex + $textarea.val().length < BlogUtil.sIndex + BlogUtil.textIndex) {
             /*
-            * spacebar keyboard btn pressed event is processed here
+            * usual backspace keyboard btn pressed event is processed here
             * */
+            if (BlogUtil.cursorIndex < 1) return;
 
+            let width;
+            const $parentPre = $targetSpan.parent();
+            const innerSpans = $parentPre.find("span");
+            if (innerSpans.length > 1) {
+                /*
+                * if there's multiple spans, it means space has been typed right before this event happened
+                * so we're going to delete span element instead
+                * */
+                $parentPre.children().last().remove();
+                width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
+            } else {
+                const targetChar = $targetSpan.text().charAt(BlogUtil.cursorIndex - 1);
+
+                width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $textarea.val().slice(BlogUtil.cursorIndex));
+            }
+
+            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+            BlogUtil.textIndex--;
+
+            return;
+        }
+
+        /*
+        * if the last character of the textarea is space, then we are gonna process space
+        * */
+        if (lastChar == ' ') {
+
+            /*
+            * space bar keyboard btn pressed event is processed here
+            * */
             if (BlogUtil.spaceCd === '01') {
                 /*
                 * when space bar is pressed twice
@@ -91,7 +138,7 @@ $(() => {
 
             } else if (BlogUtil.spaceCd === '02') {
                 /*
-                * when space bar is pressed more than two times
+                * when space bar is pressed more than twice
                 * */
                 let $newLine = null;
                 const lastOne = $targetSpan.parent().find(".new-line");
@@ -121,104 +168,48 @@ $(() => {
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
 
                 $targetSpan.text($targetSpan.text() + ' ');
-                BlogUtil.tIndex++;
-                BlogUtil.cIndex++;
-
                 BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
             }
-        }
-    });
 
-    $(".wp-textarea-wrapper textarea").on("input", (event) => {
-        const $textarea = $(".wp-textarea-wrapper textarea");
-        const $targetSpan = $(".wp-code .wp-line span");
-        const $wpWrapper = $(".wp-textarea-wrapper");
-        const $wpDraftSpan = $(".wp-code-draft span");
-        const $cursor = $(".wp-core .cursors .cursor")
+            BlogUtil.textIndex = BlogUtil.cursorIndex;
 
-        /*
-        * if the backspace keyboard btn is pressed, and properly it is recognized as an event,
-        *  we won't process any codes in this event
-        * */
-        if (BlogUtil.isOnDelete) {
-            if (BlogUtil.isOnDelete) BlogUtil.isOnDelete = false;
             return;
         }
 
-        if (event.keyCode === 37) {
-            BlogUtil.cIndex += $textarea.val().length > 0 ? $textarea.val().length - 1 : 0;
-            let lastChar = $targetSpan.text().charAt(BlogUtil.cIndex);
-            console.log(lastChar);
-            const fontSize = $targetSpan.css("font-size");
-            console.log("f", fontSize)
-            $wpDraftSpan.css("font-size", fontSize);
-            BlogUtil.cIndex -= 1;
+        /*
+        * the lastChar cannot be a space anymore from here
+        * */
+        if (BlogUtil.spaceCd === "02") {
+            const $parentPre = $targetSpan.parent()
+            const innerSpans = $parentPre.find("span");
+            let spanList = [];
+            innerSpans.each((index, span) => {
+                spanList.push($(span).text());
+            });
 
-            console.log($targetSpan.text())
-            if (lastChar === ' ') {
-                $wpDraftSpan.html('&nbsp;');
-            } else {
-                $wpDraftSpan.text(lastChar);
-            }
+            const combinedSpan = spanList.join("");
 
-            let width = $wpDraftSpan.get(0).offsetWidth;
-            $wpDraftSpan.text('');
-            $textarea.val('');
-            BlogUtil.tIndex = 0;
+            $parentPre.empty();
+            $targetSpan = $(`<span>${combinedSpan}</span>`);
+            $parentPre.append($targetSpan);
+        }
 
-            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
-        } else { /* process normal keyword letter like alphabet or korean */
+        BlogUtil.spaceCd = '00'; // no space
 
-            /*
-            * this if statement is used when the backspace keyboard btn is pressed
-            * there's some specific weird cases(korean) when the event can't recognize if the backspace btn is pressed
-            * this if statement is used for this case
-            * */
-            if (BlogUtil.sIndex + $textarea.val().length === BlogUtil.sIndex + BlogUtil.tIndex) {
-                const targetChar = $targetSpan.text().charAt($targetSpan.text().length - 1);
-
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
-
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
-
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex + 1));
-
-                BlogUtil.cIndex--;
-
-                return;
-            }
-
-            let lastChar = $textarea.val().charAt($textarea.val().length - 1);
-            const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, lastChar);
-
-            /*
-            * if the last character of the textarea is space, then we don't process anything here
-            * */
-            if (lastChar == ' ') return;
-
-            BlogUtil.spaceCd = '00'; // no space
-
-            if (BlogUtil.containsKorean(lastChar)) {
-                if ($textarea.val().length - BlogUtil.cIndex) {
-                    $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex));
-
-                    BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
-                    BlogUtil.cIndex++;
-                } else {
-                    $targetSpan.text($targetSpan.text().slice(0, BlogUtil.tIndex) + $textarea.val().slice(BlogUtil.tIndex));
-                }
-
-                if (BlogUtil.cIndex - BlogUtil.tIndex === 2) {
-                    BlogUtil.tIndex++;
-                }
-            } else {
-                $targetSpan.text($targetSpan.text() + lastChar);
-
-                BlogUtil.tIndex++;
-                BlogUtil.cIndex++;
+        if (BlogUtil.containsKorean(lastChar)) {
+            if ($textarea.val().length - BlogUtil.cursorIndex) {
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex));
 
                 BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+            } else {
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex));
             }
+        } else {
+            $targetSpan.text($targetSpan.text() + lastChar);
+
+            BlogUtil.textIndex++;
+
+            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
         }
     });
 
