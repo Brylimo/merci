@@ -3,8 +3,7 @@ class BlogUtil {
     static isActive = false;
     static cursorIndex = 0; // cursor index
     static textIndex = 0; // text index
-    static sIndex = 0; // spot index
-    static spaceCd = "00";
+    static originIndex = 0; // origin index
 
     static timerFn() {
         const target = $(".wp .cursors");
@@ -67,7 +66,7 @@ class BlogUtil {
             BlogUtil.cursorIndex--;
         }
 
-        if (BlogUtil.cursorIndex - BlogUtil.textIndex === 2) {
+        if (BlogUtil.cursorIndex - BlogUtil.originIndex - BlogUtil.textIndex === 2) {
             BlogUtil.textIndex++;
         }
     }

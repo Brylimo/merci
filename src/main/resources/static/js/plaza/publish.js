@@ -37,7 +37,8 @@ $(() => {
                 let leftChar = $targetSpan.text().charAt(BlogUtil.cursorIndex - 1);
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, leftChar);
                 BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
-                BlogUtil.textIndex = BlogUtil.cursorIndex;
+                BlogUtil.originIndex = BlogUtil.cursorIndex;
+                BlogUtil.textIndex = 0;
             } else if (event.key === "ArrowRight") { // press ArrowRight keyboard btn -> one step move cursor to right
                 if (BlogUtil.cursorIndex >= $targetSpan.text().length) return;
                 $textarea.val('');
@@ -45,7 +46,18 @@ $(() => {
                 let rightChar = $targetSpan.text().charAt(BlogUtil.cursorIndex);
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, rightChar);
                 BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
-                BlogUtil.textIndex = BlogUtil.cursorIndex;
+                BlogUtil.originIndex = BlogUtil.cursorIndex;
+                BlogUtil.textIndex = 0;
+            } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
+                if (BlogUtil.cursorIndex < 1) return;
+
+                const targetChar = $targetSpan.text().charAt(BlogUtil.cursorIndex - 1);
+
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $targetSpan.text().slice(BlogUtil.cursorIndex));
+
+                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+                BlogUtil.originIndex = BlogUtil.cursorIndex;
             }
 
             /*if (event.keyCode === 13) { // enter
@@ -65,24 +77,7 @@ $(() => {
         let lastChar = $textarea.val().charAt($textarea.val().length - 1);
         const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, lastChar);
 
-        /*
-        * this if statement is used when the backspace keyboard btn is pressed
-        * there's some specific weird cases(korean) when the event can't recognize if the backspace btn is pressed
-        * this if statement is used for this case
-        * */
-        if (BlogUtil.sIndex + $textarea.val().length == BlogUtil.sIndex + BlogUtil.textIndex) {
-            if (BlogUtil.cursorIndex < 1) return;
-
-            const targetChar = $targetSpan.text().charAt($targetSpan.text().length - 1);
-
-            const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
-
-            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
-
-            $targetSpan.text($targetSpan.text().slice(0, BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex + 1));
-
-            return;
-        } else if (BlogUtil.sIndex + $textarea.val().length < BlogUtil.sIndex + BlogUtil.textIndex) {
+        if (BlogUtil.originIndex + $textarea.val().length <= BlogUtil.originIndex + BlogUtil.textIndex) {
             /*
             * usual backspace keyboard btn pressed event is processed here
             * */
@@ -102,11 +97,18 @@ $(() => {
                 const targetChar = $targetSpan.text().charAt(BlogUtil.cursorIndex - 1);
 
                 width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $textarea.val().slice(BlogUtil.cursorIndex));
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $targetSpan.text().slice(BlogUtil.cursorIndex));
             }
 
             BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
-            BlogUtil.textIndex--;
+            if (BlogUtil.originIndex + $textarea.val().length !== BlogUtil.originIndex + BlogUtil.textIndex) {
+                /*
+                * this if statement is used when the backspace keyboard btn is pressed
+                * there's some specific weird cases(korean) when the event can't recognize if the backspace btn is pressed
+                * this if statement is used for this case
+                * */
+                BlogUtil.textIndex--;
+            }
 
             return;
         }
@@ -116,27 +118,14 @@ $(() => {
         * */
         if (lastChar == ' ') {
 
+            const $parentPre = $targetSpan.parent();
+            const secondLastChar = $targetSpan.val().charAt($textarea.val().length - 2);
+            let innerSpans = $parentPre.find("span");
+
             /*
             * space bar keyboard btn pressed event is processed here
             * */
-            if (BlogUtil.spaceCd === '01') {
-                /*
-                * when space bar is pressed twice
-                * */
-
-                BlogUtil.spaceCd = '02';
-                $targetSpan.text($textarea.val().trim());
-                const $spaceA = $("<span class='space-a'> </span>");
-                const $newLine = $("<span>&nbsp;</span>");
-
-                $newLine.addClass("new-line");
-                $targetSpan.parent().append($spaceA);
-                $targetSpan.parent().append($newLine);
-
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
-
-            } else if (BlogUtil.spaceCd === '02') {
+            if (innerSpans.length > 1) {
                 /*
                 * when space bar is pressed more than twice
                 * */
@@ -159,19 +148,47 @@ $(() => {
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
 
                 BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
-            } else {
+            } else if (secondLastChar && secondLastChar == ' ') {
                 /*
-                * when it's just a normal space which has only one space
+                * when space bar is pressed twice
                 * */
-                BlogUtil.spaceCd = '01';
+                const spareStr = $targetSpan.text().slice(BlogUtil.cursorIndex).trimStart();
 
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex).trimEnd());
+                const $spaceA = $("<span class='space-a'> </span>");
+                const $newLine = $("<span>&nbsp;</span>");
+
+                $newLine.addClass("new-line");
+                $targetSpan.parent().append($spaceA);
+                $targetSpan.parent().append($newLine);
+
+                if (spareStr) {
+                    const $spare = $(`<span>${spareStr}</span>`);
+                    $targetSpan.parent().append($spare);
+
+                    innerSpans = $parentPre.find("span");
+
+                    const spanList = [];
+                    innerSpans.each((index, span) => {
+                        spanList.push($(span).text());
+                    });
+
+                    const combinedSpan = spanList.join("");
+
+                    $parentPre.empty();
+                    $targetSpan = $(`<span>${combinedSpan}</span>`);
+                    $parentPre.append($targetSpan);
+                }
+
+                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
+                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+            } else {
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
-
-                $targetSpan.text($targetSpan.text() + ' ');
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex) + ' ' + $targetSpan.text().slice(BlogUtil.cursorIndex));
                 BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
             }
 
-            BlogUtil.textIndex = BlogUtil.cursorIndex;
+            BlogUtil.textIndex = BlogUtil.cursorIndex - BlogUtil.originIndex;
 
             return;
         }
@@ -179,9 +196,10 @@ $(() => {
         /*
         * the lastChar cannot be a space anymore from here
         * */
-        if (BlogUtil.spaceCd === "02") {
-            const $parentPre = $targetSpan.parent()
-            const innerSpans = $parentPre.find("span");
+        const $parentPre = $targetSpan.parent();
+        const innerSpans = $parentPre.find("span");
+
+        if (innerSpans.length > 1) {
             let spanList = [];
             innerSpans.each((index, span) => {
                 spanList.push($(span).text());
@@ -194,22 +212,19 @@ $(() => {
             $parentPre.append($targetSpan);
         }
 
-        BlogUtil.spaceCd = '00'; // no space
-
         if (BlogUtil.containsKorean(lastChar)) {
-            if ($textarea.val().length - BlogUtil.cursorIndex) {
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex));
+            if (BlogUtil.originIndex + $textarea.val().length - BlogUtil.cursorIndex) {
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.originIndex + BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex) + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
                 BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
             } else {
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex));
+                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.originIndex + BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex) + $targetSpan.text().slice(BlogUtil.originIndex + BlogUtil.textIndex + 1));
             }
         } else {
-            $targetSpan.text($targetSpan.text() + lastChar);
-
-            BlogUtil.textIndex++;
+            $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex)  + lastChar + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
             BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+            BlogUtil.textIndex++;
         }
     });
 
