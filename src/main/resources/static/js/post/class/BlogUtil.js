@@ -1,6 +1,9 @@
 class BlogUtil {
     static timers = [];
     static isActive = false;
+    static currentPre = null;
+
+    // index
     static cursorIndex = 0; // cursor index
     static textIndex = 0; // text index
     static originIndex = 0; // origin index
@@ -57,9 +60,28 @@ class BlogUtil {
         return width;
     }
 
-    static moveCursorOneStepHorizontally($cursor, $wpWrapper, width) {
-        $cursor.css("left", parseFloat($cursor.css("left")) + width + "px");
-        $wpWrapper.css("left", parseFloat($wpWrapper.css("left")) + width + "px");
+    static moveCursorOneStepHorizontally($targetPre, $cursor, $wpWrapper, width) {
+        // todo need to extract maxWidth value to the parameter...
+        const coreWidth = $wpWrapper.parent()[0].getBoundingClientRect().width;
+        const leftValue = parseFloat($cursor.css("left")) + width;
+
+        if (coreWidth < leftValue) { // move to new line
+            const lineHeight = parseFloat($targetPre.css("line-height"));
+            const topValue = parseFloat($cursor.css("top")) + lineHeight;
+
+            $cursor.css("left", width + "px"); $cursor.css("top", topValue + "px");
+            $wpWrapper.css("left", width + "px"); $wpWrapper.css("top", topValue + "px");
+        } else if (leftValue < 0) { // delete current line & go to previous line
+            const lineHeight = parseFloat($targetPre.css("line-height"));
+            const topValue = parseFloat($cursor.css("top")) - lineHeight;
+
+            $cursor.css("left", width + "px"); $cursor.css("top", topValue + "px");
+            $wpWrapper.css("left", width + "px"); $wpWrapper.css("top", topValue + "px");
+        } else { // normal case
+            $cursor.css("left", leftValue + "px");
+            $wpWrapper.css("left", leftValue + "px");
+        }
+
         if (width > 0) {
             BlogUtil.cursorIndex++;
         } else if (width < 0) {

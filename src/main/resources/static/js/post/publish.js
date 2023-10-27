@@ -36,7 +36,7 @@ $(() => {
 
                 let leftChar = $targetSpan.text().charAt(BlogUtil.cursorIndex - 1);
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, leftChar);
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
                 BlogUtil.originIndex = BlogUtil.cursorIndex;
                 BlogUtil.textIndex = 0;
             } else if (event.key === "ArrowRight") { // press ArrowRight keyboard btn -> one step move cursor to right
@@ -45,7 +45,7 @@ $(() => {
 
                 let rightChar = $targetSpan.text().charAt(BlogUtil.cursorIndex);
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, rightChar);
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
                 BlogUtil.originIndex = BlogUtil.cursorIndex;
                 BlogUtil.textIndex = 0;
             } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
@@ -56,7 +56,7 @@ $(() => {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
                 BlogUtil.originIndex = BlogUtil.cursorIndex;
             }
 
@@ -68,6 +68,11 @@ $(() => {
     });
 
     $(".wp-textarea-wrapper textarea").on("input", (event) => {
+        const $wpText = $(".wp-txt");
+        if ($wpText[0]) {
+            $wpText.remove();
+        }
+
         const $textarea = $(".wp-textarea-wrapper textarea");
         const $wpWrapper = $(".wp-textarea-wrapper");
         const $wpDraftSpan = $(".wp-code-draft span");
@@ -100,7 +105,7 @@ $(() => {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $targetSpan.text().slice(BlogUtil.cursorIndex));
             }
 
-            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width*(-1));
+            BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
             if (BlogUtil.originIndex + $textarea.val().length !== BlogUtil.originIndex + BlogUtil.textIndex) {
                 /*
                 * this if statement is used when the backspace keyboard btn is pressed
@@ -147,7 +152,7 @@ $(() => {
 
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
 
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
             } else if (secondLastChar && secondLastChar == ' ') {
                 /*
                 * when space bar is pressed twice
@@ -181,11 +186,11 @@ $(() => {
                 }
 
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
             } else {
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex) + ' ' + $targetSpan.text().slice(BlogUtil.cursorIndex));
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
             }
 
             BlogUtil.textIndex = BlogUtil.cursorIndex - BlogUtil.originIndex;
@@ -216,14 +221,14 @@ $(() => {
             if (BlogUtil.originIndex + $textarea.val().length - BlogUtil.cursorIndex) {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.originIndex + BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex) + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
-                BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
             } else {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.originIndex + BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex) + $targetSpan.text().slice(BlogUtil.originIndex + BlogUtil.textIndex + 1));
             }
         } else {
             $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex)  + lastChar + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
-            BlogUtil.moveCursorOneStepHorizontally($cursor, $wpWrapper, width);
+            BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
             BlogUtil.textIndex++;
         }
     });
@@ -235,6 +240,11 @@ $(() => {
     });
 
     $(".wp").on("click", (event) => {
+        const $placeholder = $(".wp-placeholder");
+        if ($placeholder[0]) {
+            $placeholder.remove();
+        }
+
         BlogUtil.timerPlayer();
         BlogUtil.isActive = true;
 
@@ -248,6 +258,10 @@ $(() => {
 const init = () => {
     const workplaceWidth = document.querySelector(".workplace-wrapper").offsetWidth;
     document.querySelector(".publish-footer").style.width = workplaceWidth + 'px';
+
+    // initialize cursor size
+    const lineHeight = parseFloat($(".wp-placeholder").css("line-height"));
+    $(".cursors .cursor").css("height", lineHeight + "px");
 
     const $wpWrapper = $(".wp-textarea-wrapper");
     $wpWrapper.css("top", $(".wp-textarea-wrapper").height() + "px");

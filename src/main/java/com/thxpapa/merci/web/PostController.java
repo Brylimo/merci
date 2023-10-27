@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@RequestMapping(value = "/plaza")
-public class PlazaController {
+@RequestMapping(value = "/post")
+public class PostController {
 
     @GetMapping("/publish")
     public String write() {
-        return "plaza/publish";
+        return "post/publish";
     }
 }
