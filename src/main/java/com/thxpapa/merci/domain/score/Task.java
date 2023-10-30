@@ -1,11 +1,11 @@
 package com.thxpapa.merci.domain.score;
 
+import com.thxpapa.merci.dto.score.TaskUpdateDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
 @Getter
@@ -65,5 +65,23 @@ public class Task {
         this.eventCd = eventCd;
         this.statusCd = statusCd;
         this.day = day;
+    }
+
+    public Task updateTask(EntityManager em, TaskUpdateDto taskUpdateDto) {
+        if (taskUpdateDto.getContent() != null) {
+            this.content = taskUpdateDto.getContent();
+        }
+        if (taskUpdateDto.getReward() != null) {
+            this.reward = taskUpdateDto.getReward();
+        }
+        if (taskUpdateDto.getEventCd() != null) {
+            this.eventCd = taskUpdateDto.getEventCd();
+        }
+        if (taskUpdateDto.getDoneCd() != null) {
+            this.doneCd = taskUpdateDto.getDoneCd();
+        }
+
+        em.merge(this);
+        return this;
     }
 }

@@ -1,7 +1,7 @@
 class BlogUtil {
     static timers = [];
     static isActive = false;
-    static currentPre = null;
+    static lastLineWidth = 0;
 
     // index
     static cursorIndex = 0; // cursor index
@@ -68,15 +68,23 @@ class BlogUtil {
         if (coreWidth < leftValue) { // move to new line
             const lineHeight = parseFloat($targetPre.css("line-height"));
             const topValue = parseFloat($cursor.css("top")) + lineHeight;
+            this.lastLineWidth = parseFloat($cursor.css("left"));
 
             $cursor.css("left", width + "px"); $cursor.css("top", topValue + "px");
             $wpWrapper.css("left", width + "px"); $wpWrapper.css("top", topValue + "px");
-        } else if (leftValue < 0) { // delete current line & go to previous line
+        } else if (leftValue <= 0) { // delete current line & go to previous line
+            if ($targetPre.find("span").text().length === 0) {
+                $cursor.css("left", leftValue + "px");
+                $wpWrapper.css("left", leftValue + "px");
+                BlogUtil.cursorIndex--;
+                return;
+            }
+
             const lineHeight = parseFloat($targetPre.css("line-height"));
             const topValue = parseFloat($cursor.css("top")) - lineHeight;
 
-            $cursor.css("left", width + "px"); $cursor.css("top", topValue + "px");
-            $wpWrapper.css("left", width + "px"); $wpWrapper.css("top", topValue + "px");
+            $cursor.css("left", this.lastLineWidth + "px"); $cursor.css("top", topValue + "px");
+            $wpWrapper.css("left", this.lastLineWidth + "px"); $wpWrapper.css("top", topValue + "px");
         } else { // normal case
             $cursor.css("left", leftValue + "px");
             $wpWrapper.css("left", leftValue + "px");

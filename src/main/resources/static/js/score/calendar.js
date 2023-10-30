@@ -23,6 +23,7 @@ $(() => {
         dataObj.isEvent = $(".modal-content input[name='is-event']").val();
         dataObj.date = $(".modal-content input[name='date']").val();
         dataObj.task = $(".modal-content input[name='task']").val();
+        dataObj.reward = "0"
 
         $(".modal-content input[name='task']").val('');
 
@@ -41,13 +42,53 @@ $(() => {
                 const $cellTag = $("<div class='cell-event'></div>");
                 $cellTag.text(res["content"]);
 
-                $(".cell.selected").append($cellTag);
+                const selectedElements = $(".cell.selected").add(".today-cell.selected")
+                selectedElements.append($cellTag);
             },
             error: (error) => {
                 alert('일정 등록에 실패했습니다. \n해당 문제가 지속될 경우 관리자에게 문의하여 주십시오.');
                 console.error(error.code);
             }
         });
+    });
+
+    /* handling to-do-tag btn*/
+    $(".tag.todo-tag").click(() => {
+        $(".tframe .stat-frame").addClass("invisible");
+        $(".tframe .note-frame").addClass("invisible");
+
+        $(".tframe .todo-frame").removeClass("invisible");
+    });
+
+    /* handling stat-tag btn*/
+    $(".tag.stat-tag").click(() => {
+        $(".tframe .todo-frame").addClass("invisible");
+        $(".tframe .note-frame").addClass("invisible");
+
+        $(".tframe .stat-frame").removeClass("invisible");
+
+        // todo call the today's score api
+        $.ajax({
+            url: "/api/cal/getTodayScore.json",
+            type: "GET",
+            data: {
+                date: formatDateToString(selectedDate)
+            },
+            success: (res) => {
+                $(".stat-frame .score").text(res);
+            },
+            error: (error) => {
+                console.error(error.code);
+            }
+        });
+    });
+
+    /* handling note-tag btn*/
+    $(".tag.note-tag").click(() => {
+        $(".tframe .todo-frame").addClass("invisible");
+        $(".tframe .stat-frame").addClass("invisible");
+
+        $(".tframe .note-frame").removeClass("invisible");
     });
 
     init();
@@ -114,6 +155,7 @@ const onClickAddATaskHandler = function() {
             <input type="hidden" name="is-event" value="false" />
             <input type="hidden" name="date" />
             <input type="text" name="task" placeholder="할일을 입력해주세요." />
+            <input type="text" name="reward" placeholder="점수를 입력해주세요." />
             <button type="button" class="save-btn">입력</button>
             <button type="button" class="subtract-btn">-</button>
         </div>
@@ -133,8 +175,10 @@ const onClickTaskSaveBtnHandler = (event) => {
     dataObj.isEvent = $(".tcontent-frame input[name='is-event']").val();
     dataObj.date = $(".tcontent-frame input[name='date']").val();
     dataObj.task = $(".tcontent-frame input[name='task']").val();
+    dataObj.reward = $(".tcontent-frame input[name='reward']").val();
 
     $(".tcontent-frame input[name='task']").val('');
+    $(".tcontent-frame input[name='reward']").val('');
 
     $.ajax({
         headers: {
@@ -174,10 +218,40 @@ const onClickTaskDelBtnHandler = function(event) {
 }
 
 const taskCheckHandler = function(event) {
+    const $taskFrame = $(this).parent();
+
     if ($(this).is(':checked')) {
-        $(this).parent().find('.task-txt').addClass("line-through");
+        $taskFrame.find('.task-txt').addClass("line-through");
+
+        $.ajax({
+            url: "/api/cal/modifyTask.json",
+            type: "POST",
+            dataType: "json",
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({
+                taskId: $taskFrame.data("eventId"),
+                doneCd: true
+            }),
+            error: (error) => {
+                console.error(error.code);
+            }
+        });
     } else {
-        $(this).parent().find('.task-txt').removeClass("line-through");
+        $taskFrame.find('.task-txt').removeClass("line-through");
+
+        $.ajax({
+            url: "/api/cal/modifyTask.json",
+            type: "POST",
+            dataType: "json",
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({
+                taskId: $taskFrame.data("eventId"),
+                doneCd: false
+            }),
+            error: (error) => {
+                console.error(error.code);
+            }
+        });
     }
 }
 
@@ -369,14 +443,22 @@ const generateTodoList = (dateString) => {
                 const $taskTxt = $("<div class='task-txt'></div>");
                 $taskTxt.text(job.content);
 
+                const $rewardTxt = $("<div class='reward-txt'></div>");
+                $rewardTxt.text(job.reward);
+
                 const $delBtn = $("<button type='button' class='del'>삭제</button>");
 
                 $delBtn.click(onClickTaskDelBtnHandler);
 
                 $task.append($taskCheckBox);
                 $task.append($taskTxt);
+                $task.append($rewardTxt);
                 $task.append($delBtn);
 
+                if (job.doneCd) {
+                    $taskCheckBox.prop("checked", true);
+                    $task.find('.task-txt').addClass("line-through");
+                }
                 $(".tcontent-frame .todo-list").append($task);
             });
 

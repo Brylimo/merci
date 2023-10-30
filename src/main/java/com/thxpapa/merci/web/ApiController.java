@@ -7,6 +7,7 @@ import com.thxpapa.merci.domain.user.MerciUser;
 import com.thxpapa.merci.dto.ErrorResponse;
 import com.thxpapa.merci.dto.UserRegisterRequestDto;
 import com.thxpapa.merci.dto.score.TagDto;
+import com.thxpapa.merci.dto.score.TaskUpdateDto;
 import com.thxpapa.merci.service.geo.GeoService;
 import com.thxpapa.merci.service.score.DayService;
 import com.thxpapa.merci.service.score.SpecialDayService;
@@ -207,6 +208,7 @@ public class ApiController {
         try {
             String date = formData.get("date").get(0);
             String task = formData.get("task").get(0);
+            String reward = formData.get("reward").get(0);
             String isEvent = formData.get("isEvent").get(0);
             String eventCd = null;
 
@@ -224,11 +226,23 @@ public class ApiController {
                 day = dayService.createDay(thisDate);
             }
 
-            Task createdTask = taskService.createTask(day, task, eventCd, 10);
+            Task createdTask = taskService.createTask(day, task, eventCd, Integer.parseInt(reward));
 
             return ResponseEntity.status(HttpStatus.OK).body(createdTask);
         } catch (Exception e) {
             log.debug("addOneTask error occurred!");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
+        }
+    }
+
+    @PostMapping(value="/cal/modifyTask.json", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> modifyTask(@RequestBody TaskUpdateDto taskUpdateDto) {
+        try {
+            Task updatedTask = taskService.updateTask(taskUpdateDto);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedTask);
+        } catch (Exception e) {
+            log.debug("modifyTask error occurred!");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
         }
@@ -265,6 +279,32 @@ public class ApiController {
             }
         } catch (Exception e) {
             log.debug("getAllDayTasks error occurred!");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
+        }
+    }
+
+    @GetMapping(value = "/cal/getTodayScore.json", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getTodayScore(@RequestParam("date") String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        try {
+            LocalDate thisDate = LocalDate.parse(date, formatter);
+
+            Day day = dayService.findOneDay(thisDate);
+
+            if (day == null) {
+                return ResponseEntity.status(HttpStatus.OK).body(Integer.valueOf(0));
+            } else {
+                Integer score = taskService.getTodayScore(day);
+
+                if (score == null) {
+                    return ResponseEntity.status(HttpStatus.OK).body(Integer.valueOf(0));
+                }
+                return ResponseEntity.status(HttpStatus.OK).body(score);
+            }
+        } catch (Exception e) {
+            log.debug("getTodayScore error occurred!");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server error"));
         }
