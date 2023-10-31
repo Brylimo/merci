@@ -60,7 +60,7 @@ class BlogUtil {
         return width;
     }
 
-    static moveCursorOneStepHorizontally($targetPre, $cursor, $wpWrapper, width) {
+    static moveCursorOneStepHorizontally(kind, $targetPre, $cursor, $wpWrapper, width) {
         // todo need to extract maxWidth value to the parameter...
         const coreWidth = $wpWrapper.parent()[0].getBoundingClientRect().width;
         const leftValue = parseFloat($cursor.css("left")) + width;

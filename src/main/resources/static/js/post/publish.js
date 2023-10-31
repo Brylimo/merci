@@ -36,7 +36,7 @@ $(() => {
 
                 let leftChar = $targetSpan.text().charAt(BlogUtil.cursorIndex - 1);
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, leftChar);
-                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
+                BlogUtil.moveCursorOneStepHorizontally("arrowLeft", $targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
                 BlogUtil.originIndex = BlogUtil.cursorIndex;
                 BlogUtil.textIndex = 0;
             } else if (event.key === "ArrowRight") { // press ArrowRight keyboard btn -> one step move cursor to right
@@ -45,7 +45,7 @@ $(() => {
 
                 let rightChar = $targetSpan.text().charAt(BlogUtil.cursorIndex);
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, rightChar);
-                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("arrowRight", $targetSpan.parent(), $cursor, $wpWrapper, width);
                 BlogUtil.originIndex = BlogUtil.cursorIndex;
                 BlogUtil.textIndex = 0;
             } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
@@ -56,7 +56,7 @@ $(() => {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
-                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
+                BlogUtil.moveCursorOneStepHorizontally("backspace", $targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
                 BlogUtil.originIndex = BlogUtil.cursorIndex;
             }
 
