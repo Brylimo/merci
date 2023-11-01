@@ -48,6 +48,8 @@ $(() => {
                 BlogUtil.moveCursorOneStepHorizontally("arrowRight", $targetSpan.parent(), $cursor, $wpWrapper, width);
                 BlogUtil.originIndex = BlogUtil.cursorIndex;
                 BlogUtil.textIndex = 0;
+            } else if (event.key === "ArrowUp") {
+                BlogUtil.moveCursorOneStepVertically("arrowRight", $targetSpan.parent(), $cursor, $wpWrapper, 3);
             } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
                 if (BlogUtil.cursorIndex < 1) return;
 
@@ -105,7 +107,7 @@ $(() => {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex - 1) + $targetSpan.text().slice(BlogUtil.cursorIndex));
             }
 
-            BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
+            BlogUtil.moveCursorOneStepHorizontally("backspace", $targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
             if (BlogUtil.originIndex + $textarea.val().length !== BlogUtil.originIndex + BlogUtil.textIndex) {
                 /*
                 * this if statement is used when the backspace keyboard btn is pressed
@@ -152,7 +154,7 @@ $(() => {
 
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
 
-                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
             } else if (secondLastChar && secondLastChar == ' ') {
                 /*
                 * when space bar is pressed twice
@@ -186,11 +188,11 @@ $(() => {
                 }
 
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
-                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
             } else {
                 const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex) + ' ' + $targetSpan.text().slice(BlogUtil.cursorIndex));
-                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
             }
 
             BlogUtil.textIndex = BlogUtil.cursorIndex - BlogUtil.originIndex;
@@ -218,17 +220,28 @@ $(() => {
         }
 
         if (BlogUtil.containsKorean(lastChar)) {
+            if (BlogUtil.isCodeTypeChanged === 0) {
+                BlogUtil.isCodeTypeChanged = 2;
+            } else if (BlogUtil.isCodeTypeChanged === 1 || BlogUtil.isCodeTypeChanged === 4) {
+                BlogUtil.isCodeTypeChanged = 3;
+            }
+
             if (BlogUtil.originIndex + $textarea.val().length - BlogUtil.cursorIndex) {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.originIndex + BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex) + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
-                BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
             } else {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.originIndex + BlogUtil.textIndex) + $textarea.val().slice(BlogUtil.textIndex) + $targetSpan.text().slice(BlogUtil.originIndex + BlogUtil.textIndex + 1));
             }
         } else {
+            if (BlogUtil.isCodeTypeChanged === 0) {
+                BlogUtil.isCodeTypeChanged = 1;
+            } else if (BlogUtil.isCodeTypeChanged === 2 || BlogUtil.isCodeTypeChanged === 3) {
+                BlogUtil.isCodeTypeChanged = 4;
+            }
             $targetSpan.text($targetSpan.text().slice(0, BlogUtil.cursorIndex)  + lastChar + $targetSpan.text().slice(BlogUtil.cursorIndex));
 
-            BlogUtil.moveCursorOneStepHorizontally($targetSpan.parent(), $cursor, $wpWrapper, width);
+            BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
             BlogUtil.textIndex++;
         }
     });
