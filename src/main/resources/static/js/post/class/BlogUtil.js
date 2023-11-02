@@ -1,13 +1,18 @@
+document.write('<script src="/js/post/class/LineObj.js"></script>');
+
 class BlogUtil {
     static timers = [];
+    static lineList = []; // list that remembers width of the each line
     static isActive = false;
     static isCodeTypeChanged = 0; // default = 0, ascii = 1, unicode = 2, ascii -> unicode = 3, unicode -> ascii = 4
-    static lastLineWidth = 0;
 
     // index
-    static cursorIndex = 0; // cursor index
-    static textIndex = 0; // text index
-    static originIndex = 0; // origin index
+    static Index = {
+        cursor: 0, // cursor index
+        text: 0, // text index
+        origin: 0, // origin index
+        line: 0 // line index
+    }
 
     static timerFn() {
         const target = $(".wp .cursors");
@@ -66,13 +71,14 @@ class BlogUtil {
         const coreWidth = $wpWrapper.parent()[0].getBoundingClientRect().width;
         const leftValue = parseFloat($cursor.css("left")) + width;
 
-        if (coreWidth < leftValue) { // move to new line
+        if ((kind === "arrowRight" && this.lineList[this.Index["line"]].width < leftValue) ||
+            (kind === "add" && coreWidth < leftValue)) { // move to new line
             const lineHeight = parseFloat($targetPre.css("line-height"));
             const topValue = parseFloat($cursor.css("top")) + lineHeight;
 
-            if (BlogUtil.isCodeTypeChanged === 4) {
+            if (kind === "add" && BlogUtil.isCodeTypeChanged === 4) {
                 // special case
-                const selectedText = $targetPre.find("span").text().slice(0, this.cursorIndex + 1);
+                const selectedText = $targetPre.find("span").text().slice(0, this.Index["cursor"] + 1);
                 let spaceCnt = 0;
                 let initialValue = 0;
 
@@ -91,23 +97,41 @@ class BlogUtil {
                     }
                 }
 
-                this.lastLineWidth = parseFloat($cursor.css("left")) - initialValue - (width * (spaceCnt - 1));
+                this.lineList[this.Index["line"]].width = parseFloat($cursor.css("left")) - initialValue - (width * (spaceCnt - 1));
 
                 $cursor.css("left", (initialValue + width * spaceCnt) + "px"); $cursor.css("top", topValue + "px");
                 $wpWrapper.css("left", (initialValue + width * spaceCnt) + "px"); $wpWrapper.css("top", topValue + "px");
+
+                this.Index["line"]++;
+                this.lineList.splice(this.Index["line"], 0, new LineObj(initialValue + width * spaceCnt, 0));
             } else {
-                this.lastLineWidth = parseFloat($cursor.css("left"));
+                if (kind === "add") {
+                    this.lineList[this.Index["line"]].width = parseFloat($cursor.css("left"));
+                }
 
                 $cursor.css("left", width + "px"); $cursor.css("top", topValue + "px");
                 $wpWrapper.css("left", width + "px"); $wpWrapper.css("top", topValue + "px");
+
+                this.Index["line"]++;
+                if (kind === "add") {
+                    this.lineList.splice(this.Index["line"], 0, new LineObj(width, 0));
+                }
             }
 
             this.isCodeTypeChanged = 0;
         } else if (leftValue <= 0) { // delete current line & go to previous line
-            if ((kind === "backspace" && $targetPre.find("span").text().length === 0) || (kind === "arrowLeft" && parseFloat($cursor.css("left")) > 0)) {
+            if ((kind === "backspace" && this.Index["line"] === 0) || (kind === "arrowLeft" && parseFloat($cursor.css("left")) > 0)) {
                 $cursor.css("left", leftValue + "px");
                 $wpWrapper.css("left", leftValue + "px");
-                BlogUtil.cursorIndex--;
+                BlogUtil.Index["cursor"]--;
+
+                if (kind === "backspace") {
+                    const before = this.lineList.slice(0, this.Index["line"]);
+                    const after = this.lineList.slice(this.Index["line"]+1);
+                    const mergedList = before.concat(after);
+
+                    this.lineList = mergedList;
+                }
                 return;
             }
 
@@ -115,25 +139,48 @@ class BlogUtil {
             const topValue = parseFloat($cursor.css("top")) - lineHeight;
 
             if (kind === "backspace") {
-                $cursor.css("left", this.lastLineWidth + "px"); $cursor.css("top", topValue + "px");
-                $wpWrapper.css("left", this.lastLineWidth + "px"); $wpWrapper.css("top", topValue + "px");
+                $cursor.css("left", this.lineList[this.Index["line"] - 1].width + "px"); $cursor.css("top", topValue + "px");
+                $wpWrapper.css("left", this.lineList[this.Index["line"] - 1].width + "px"); $wpWrapper.css("top", topValue + "px");
+
+                const before = this.lineList.slice(0, this.Index["line"]);
+                const after = this.lineList.slice(this.Index["line"]+1);
+                const mergedList = before.concat(after);
+
+                this.lineList = mergedList;
+                this.Index["line"]--;
             } else if (kind === "arrowLeft") {
-                $cursor.css("left", this.lastLineWidth + width + "px"); $cursor.css("top", topValue + "px");
-                $wpWrapper.css("left", this.lastLineWidth + width + "px"); $wpWrapper.css("top", topValue + "px");
+                $cursor.css("left", this.lineList[this.Index["line"] - 1].width + width + "px"); $cursor.css("top", topValue + "px");
+                $wpWrapper.css("left", this.lineList[this.Index["line"] - 1].width + width + "px"); $wpWrapper.css("top", topValue + "px");
+                this.Index["line"]--;
             }
         } else { // normal case
             $cursor.css("left", leftValue + "px");
             $wpWrapper.css("left", leftValue + "px");
+            if (kind === "add" && this.lineList.length == 0) {
+                // type first letter
+                this.lineList[this.Index["line"]] = new LineObj(0, 0);
+            }
+
+            if (kind === "add" || kind === "backspace") {
+                this.lineList[this.Index["line"]].width += width;
+                if (this.lineList[this.Index["line"]].width > coreWidth) {
+                    console.log("zz");
+                }
+
+                if (this.lineList[this.Index["line"]].width <= 0) {
+                    this.lineList[this.Index["line"]].width = 0;
+                }
+            }
         }
 
         if (width > 0) {
-            BlogUtil.cursorIndex++;
+            BlogUtil.Index["cursor"]++;
         } else if (width < 0) {
-            BlogUtil.cursorIndex--;
+            BlogUtil.Index["cursor"]--;
         }
 
-        if (BlogUtil.cursorIndex - BlogUtil.originIndex - BlogUtil.textIndex === 2) {
-            BlogUtil.textIndex++;
+        if (BlogUtil.Index["cursor"] - BlogUtil.Index["origin"] - BlogUtil.Index["text"] === 2) {
+            BlogUtil.Index["text"]++;
         }
     }
 
