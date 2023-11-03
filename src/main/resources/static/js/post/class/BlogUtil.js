@@ -1,6 +1,35 @@
+/*
+* BlogUtil class uses LineObj class in a number of places
+* gotta import LineObj js class first
+* */
 document.write('<script src="/js/post/class/LineObj.js"></script>');
 
 class BlogUtil {
+    /* the wrapper div of main textarea
+    * you gotta initialize it to properly use this utility class
+    * jquery type html element form is needed
+    * */
+    static $txtareaWrapper = null;
+
+    /* the span tag of draft span
+    * you need this when you get a width of added or deleted letter
+    * you gotta initialize it to properly use this utility class
+    * jquery type html element form is needed
+    * */
+    static $draftSpan = null;
+
+    /* the current targeting pre tag
+    * you gotta initialize it to properly use this utility class
+    * jquery type html element form is needed
+    * */
+    static $targetPre = null;
+
+    /* the html element corresponds to cursor
+    * you gotta initialize it to properly use this utility class
+    * jquery type html element form is needed
+    * */
+    static $cursor = null;
+
     static timers = [];
     static lineList = []; // list that remembers width of the each line
     static isActive = false;
@@ -12,6 +41,44 @@ class BlogUtil {
         text: 0, // text index
         origin: 0, // origin index
         line: 0 // line index
+    }
+
+    /*
+    * initialize function
+    * */
+    static init($txtareaWrapper, $draftSpan, $targetPre, $cursor) {
+        this.setTxtareaWrapper($txtareaWrapper);
+        this.setDraftSpan($draftSpan);
+        this.setTargetPre($targetPre);
+        this.setCursor($cursor)
+    }
+
+    /*
+    * setter function of $txtareaWrapper
+    * */
+    static setTxtareaWrapper($txtareaWrapper) {
+        this.$txtareaWrapper = $txtareaWrapper;
+    }
+
+    /*
+    * setter function of $draftSpan
+    * */
+    static setDraftSpan($draftSpan) {
+        this.$draftSpan = $draftSpan;
+    }
+
+    /*
+    * setter function of $targetPre
+    * */
+    static setTargetPre($targetPre) {
+        this.$targetPre = $targetPre;
+    }
+
+    /*
+    * setter function of $cursor
+    * */
+    static setCursor($cursor) {
+        this.$cursor = $cursor;
     }
 
     static timerFn() {
@@ -46,50 +113,60 @@ class BlogUtil {
         return koreanRegex.test(inputString);
     }
 
-    static letterWidthConverter($targetSpan, $draftSpan, targetChar) {
+    static letterWidthConverter(targetChar) {
+        const $targetSpan = this.$targetPre.find("span").first();
 
         // sync font-size
         const fontSize = $targetSpan.css("font-size");
-        $draftSpan.css("font-size", fontSize);
-
-        // use $wpDraftSpan to get a letter width
+        this.$draftSpan.css("font-size", fontSize);
 
         if (!targetChar || targetChar === ' ') {
             // default behavior is returning a single space width('&nbsp;')
-            $draftSpan.html('&nbsp;')
+            this.$draftSpan.html('&nbsp;')
         } else {
-            $draftSpan.text(targetChar);
+            this.$draftSpan.text(targetChar);
         }
-        const width = $draftSpan[0].getBoundingClientRect().width;
-        $draftSpan.text('');
+        const width = this.$draftSpan[0].getBoundingClientRect().width;
+        this.$draftSpan.text('');
 
         return width;
     }
 
-    static moveCursorOneStepHorizontally(kind, $targetPre, $cursor, $wpWrapper, width) {
-        // todo need to extract maxWidth value to the parameter...
-        const coreWidth = $wpWrapper.parent()[0].getBoundingClientRect().width;
-        const leftValue = parseFloat($cursor.css("left")) + width;
+    static lineBubbleHandler($targetSpan, coreWidth, lineIdx) {
+        if (this.lineList[this.Index["line"]].width > coreWidth) {
+            const lastChar = $targetSpan.text()[this.lineList[this.Index["line"] + 1].firstIdx - 1];
+            const letterWidth = this.letterWidthConverter(lastChar);
+        } else {
+            return;
+        }
+    }
+
+    static moveCursorOneStepHorizontally(kind, targetChar, width) {
+        console.log("w", targetChar, width);
+        const coreWidth = this.$txtareaWrapper.parent()[0].getBoundingClientRect().width;
+        const leftValue = parseFloat(this.$cursor.css("left")) + width;
 
         if ((kind === "arrowRight" && this.lineList[this.Index["line"]].width < leftValue) ||
             (kind === "add" && coreWidth < leftValue)) { // move to new line
-            const lineHeight = parseFloat($targetPre.css("line-height"));
-            const topValue = parseFloat($cursor.css("top")) + lineHeight;
+            console.log("gaka")
+            const lineHeight = parseFloat(this.$targetPre.css("line-height"));
+            const topValue = parseFloat(this.$cursor.css("top")) + lineHeight;
 
             if (kind === "add" && BlogUtil.isCodeTypeChanged === 4) {
                 // special case
-                const selectedText = $targetPre.find("span").text().slice(0, this.Index["cursor"] + 1);
+                const selectedText = this.$targetPre.find("span").first().text().slice(0, this.Index["cursor"] + 1);
+                let firstIdx = this.Index["cursor"];
                 let spaceCnt = 0;
                 let initialValue = 0;
 
                 for (let i = selectedText.length - 1; i>= 0; i--) {
                     const char = selectedText[i];
                     if (this.containsKorean(char)) {
-                        if (selectedText[i+1] == '.') {
-                            const $wpDraftSpan = $(".wp-code-draft span");
-
-                            const width = this.letterWidthConverter($targetPre.find("span"), $wpDraftSpan, char);
+                        if (selectedText[i+1] == '.' || selectedText[i+1] == ',') {
+                            let width = this.letterWidthConverter(char);
                             initialValue = width;
+                        } else {
+                            firstIdx += 1;
                         }
                         break;
                     } else {
@@ -97,32 +174,41 @@ class BlogUtil {
                     }
                 }
 
-                this.lineList[this.Index["line"]].width = parseFloat($cursor.css("left")) - initialValue - (width * (spaceCnt - 1));
+                this.lineList[this.Index["line"]].width = parseFloat(this.$cursor.css("left")) - initialValue - (width * (spaceCnt - 1));
 
-                $cursor.css("left", (initialValue + width * spaceCnt) + "px"); $cursor.css("top", topValue + "px");
-                $wpWrapper.css("left", (initialValue + width * spaceCnt) + "px"); $wpWrapper.css("top", topValue + "px");
+                this.$cursor.css("left", (initialValue + width * spaceCnt) + "px"); this.$cursor.css("top", topValue + "px");
+                this.$txtareaWrapper.css("left", (initialValue + width * spaceCnt) + "px"); this.$txtareaWrapper.css("top", topValue + "px");
 
-                this.Index["line"]++;
-                this.lineList.splice(this.Index["line"], 0, new LineObj(initialValue + width * spaceCnt, 0));
-            } else {
-                if (kind === "add") {
-                    this.lineList[this.Index["line"]].width = parseFloat($cursor.css("left"));
+                for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
+                    this.lineList[i].firstIdx++;
                 }
 
-                $cursor.css("left", width + "px"); $cursor.css("top", topValue + "px");
-                $wpWrapper.css("left", width + "px"); $wpWrapper.css("top", topValue + "px");
+                this.Index["line"]++;
+                this.lineList.splice(this.Index["line"], 0, new LineObj(initialValue + width * spaceCnt, firstIdx - spaceCnt));
+            } else {
+                if (kind === "add") {
+                    this.lineList[this.Index["line"]].width = parseFloat(this.$cursor.css("left"));
+                }
+
+                /*if (targetChar === ' ') {
+                    width = 0;
+                    BlogUtil.Index["cursor"]++;
+                }*/
+
+                this.$cursor.css("left", width + "px"); this.$cursor.css("top", topValue + "px");
+                this.$txtareaWrapper.css("left", width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
 
                 this.Index["line"]++;
-                if (kind === "add") {
-                    this.lineList.splice(this.Index["line"], 0, new LineObj(width, 0));
+                if (kind === "add" && this.lineList.length === this.Index["line"]) {
+                    this.lineList.splice(this.Index["line"], 0, new LineObj(width, this.Index["cursor"]));
                 }
             }
 
             this.isCodeTypeChanged = 0;
         } else if (leftValue <= 0) { // delete current line & go to previous line
-            if ((kind === "backspace" && this.Index["line"] === 0) || (kind === "arrowLeft" && parseFloat($cursor.css("left")) > 0)) {
-                $cursor.css("left", leftValue + "px");
-                $wpWrapper.css("left", leftValue + "px");
+            if ((kind === "backspace" && this.Index["line"] === 0) || (kind === "arrowLeft" && parseFloat(this.$cursor.css("left")) > 0)) {
+                this.$cursor.css("left", leftValue + "px");
+                this.$txtareaWrapper.css("left", leftValue + "px");
                 BlogUtil.Index["cursor"]--;
 
                 if (kind === "backspace") {
@@ -135,12 +221,12 @@ class BlogUtil {
                 return;
             }
 
-            const lineHeight = parseFloat($targetPre.css("line-height"));
-            const topValue = parseFloat($cursor.css("top")) - lineHeight;
+            const lineHeight = parseFloat(this.$targetPre.css("line-height"));
+            const topValue = parseFloat(this.$cursor.css("top")) - lineHeight;
 
             if (kind === "backspace") {
-                $cursor.css("left", this.lineList[this.Index["line"] - 1].width + "px"); $cursor.css("top", topValue + "px");
-                $wpWrapper.css("left", this.lineList[this.Index["line"] - 1].width + "px"); $wpWrapper.css("top", topValue + "px");
+                this.$cursor.css("left", this.lineList[this.Index["line"] - 1].width + "px"); this.$cursor.css("top", topValue + "px");
+                this.$txtareaWrapper.css("left", this.lineList[this.Index["line"] - 1].width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
 
                 const before = this.lineList.slice(0, this.Index["line"]);
                 const after = this.lineList.slice(this.Index["line"]+1);
@@ -149,26 +235,44 @@ class BlogUtil {
                 this.lineList = mergedList;
                 this.Index["line"]--;
             } else if (kind === "arrowLeft") {
-                $cursor.css("left", this.lineList[this.Index["line"] - 1].width + width + "px"); $cursor.css("top", topValue + "px");
-                $wpWrapper.css("left", this.lineList[this.Index["line"] - 1].width + width + "px"); $wpWrapper.css("top", topValue + "px");
+                this.$cursor.css("left", this.lineList[this.Index["line"] - 1].width + width + "px"); this.$cursor.css("top", topValue + "px");
+                this.$txtareaWrapper.css("left", this.lineList[this.Index["line"] - 1].width + width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
                 this.Index["line"]--;
             }
         } else { // normal case
-            $cursor.css("left", leftValue + "px");
-            $wpWrapper.css("left", leftValue + "px");
+            this.$cursor.css("left", leftValue + "px");
+            this.$txtareaWrapper.css("left", leftValue + "px");
             if (kind === "add" && this.lineList.length == 0) {
                 // type first letter
-                this.lineList[this.Index["line"]] = new LineObj(0, 0);
+                this.lineList[this.Index["line"]] = new LineObj(0, this.Index["cursor"]);
             }
 
             if (kind === "add" || kind === "backspace") {
                 this.lineList[this.Index["line"]].width += width;
-                if (this.lineList[this.Index["line"]].width > coreWidth) {
-                    console.log("zz");
-                }
 
                 if (this.lineList[this.Index["line"]].width <= 0) {
                     this.lineList[this.Index["line"]].width = 0;
+                }
+
+                if (this.lineList[this.Index["line"]].width > coreWidth) {
+                    // it means the current line overflows.. but the cursor isn't at the last letter of the line
+                    const lastChar = this.$targetPre.find("span").first().text()[this.lineList[this.Index["line"] + 1].firstIdx - 1];
+                    const letterWidth = this.letterWidthConverter(lastChar);
+                    this.lineList[this.Index["line"]].width -= letterWidth;
+                    if (lastChar !== ' ') {
+                        this.lineList[this.Index["line"] + 1].firstIdx--;
+                        this.lineList[this.Index["line"] + 1].width += letterWidth;
+                    }
+                }
+
+                if (width > 0) {
+                    for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
+                        this.lineList[i].firstIdx++;
+                    }
+                } else if (width < 0) {
+                    for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
+                        this.lineList[i].firstIdx--;
+                    }
                 }
             }
         }

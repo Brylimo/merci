@@ -1,4 +1,6 @@
 $(() => {
+    init();
+
     window.addEventListener('resize', function () {
         const workplaceWidth = document.querySelector(".workplace-wrapper").offsetWidth;
         document.querySelector(".publish-footer").style.width = workplaceWidth + 'px';
@@ -23,11 +25,8 @@ $(() => {
     });
 
     $(document).on("keydown", (event) => {
-        const $textarea = $(".wp-textarea-wrapper textarea");
-        const $wpWrapper = $(".wp-textarea-wrapper");
-        const $wpDraftSpan = $(".wp-code-draft span");
-        const $cursor = $(".wp-core .cursors .cursor");
-        let $targetSpan = $(".wp-code .wp-line span");
+        const $textarea = BlogUtil.$txtareaWrapper.find("textarea").first();
+        let $targetSpan = BlogUtil.$targetPre.find("span").first();
 
         if (BlogUtil.isActive) {
             if (event.key === "ArrowLeft") { // press ArrowLeft keyboard btn -> one step move cursor to left
@@ -35,8 +34,8 @@ $(() => {
                 $textarea.val('');
 
                 let leftChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, leftChar);
-                BlogUtil.moveCursorOneStepHorizontally("arrowLeft", $targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
+                const width = BlogUtil.letterWidthConverter(leftChar);
+                BlogUtil.moveCursorOneStepHorizontally("arrowLeft", leftChar, width*(-1));
                 BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
                 BlogUtil.Index["text"] = 0;
             } else if (event.key === "ArrowRight") { // press ArrowRight keyboard btn -> one step move cursor to right
@@ -44,12 +43,12 @@ $(() => {
                 $textarea.val('');
 
                 let rightChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"]);
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, rightChar);
-                BlogUtil.moveCursorOneStepHorizontally("arrowRight", $targetSpan.parent(), $cursor, $wpWrapper, width);
+                const width = BlogUtil.letterWidthConverter(rightChar);
+                BlogUtil.moveCursorOneStepHorizontally("arrowRight", rightChar, width);
                 BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
                 BlogUtil.Index["text"] = 0;
             } else if (event.key === "ArrowUp") {
-                BlogUtil.moveCursorOneStepVertically("arrowRight", $targetSpan.parent(), $cursor, $wpWrapper, 3);
+                /*BlogUtil.moveCursorOneStepVertically("arrowRight", $targetSpan.parent(), $cursor, $wpWrapper, 3);*/
             } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
                 if (BlogUtil.Index["cursor"] < 1) return;
 
@@ -57,8 +56,8 @@ $(() => {
 
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"] - 1) + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
 
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
-                BlogUtil.moveCursorOneStepHorizontally("backspace", $targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
+                const width = BlogUtil.letterWidthConverter(targetChar);
+                BlogUtil.moveCursorOneStepHorizontally("backspace", targetChar, width*(-1));
                 BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
             }
 
@@ -75,14 +74,11 @@ $(() => {
             $wpText.remove();
         }
 
-        const $textarea = $(".wp-textarea-wrapper textarea");
-        const $wpWrapper = $(".wp-textarea-wrapper");
-        const $wpDraftSpan = $(".wp-code-draft span");
-        const $cursor = $(".wp-core .cursors .cursor");
-        let $targetSpan = $(".wp-code .wp-line span");
+        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
+        let $targetSpan = BlogUtil.$targetPre.find("span");
 
         let lastChar = $textarea.val().charAt($textarea.val().length - 1);
-        const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, lastChar);
+        const lastCharwidth = BlogUtil.letterWidthConverter(lastChar);
 
         if (BlogUtil.Index["origin"] + $textarea.val().length <= BlogUtil.Index["origin"] + BlogUtil.Index["text"]) {
             /*
@@ -91,23 +87,23 @@ $(() => {
             if (BlogUtil.Index["cursor"] < 1) return;
 
             let width;
-            const $parentPre = $targetSpan.parent();
-            const innerSpans = $parentPre.find("span");
+            const innerSpans = BlogUtil.$targetPre.find("span");
             if (innerSpans.length > 1) {
                 /*
                 * if there's multiple spans, it means space has been typed right before this event happened
                 * so we're going to delete span element instead
                 * */
-                $parentPre.children().last().remove();
-                width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
+                BlogUtil.$targetPre.children().last().remove();
+                width = BlogUtil.letterWidthConverter(' ');
+                BlogUtil.moveCursorOneStepHorizontally("backspace", ' ', width*(-1));
             } else {
                 const targetChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
 
-                width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, targetChar);
+                width = BlogUtil.letterWidthConverter(targetChar);
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"] - 1) + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
+                BlogUtil.moveCursorOneStepHorizontally("backspace", targetChar, width*(-1));
             }
 
-            BlogUtil.moveCursorOneStepHorizontally("backspace", $targetSpan.parent(), $cursor, $wpWrapper, width*(-1));
             if (BlogUtil.Index["origin"] + $textarea.val().length !== BlogUtil.Index["origin"] + BlogUtil.Index["text"]) {
                 /*
                 * this if statement is used when the backspace keyboard btn is pressed
@@ -125,9 +121,8 @@ $(() => {
         * */
         if (lastChar == ' ') {
 
-            const $parentPre = $targetSpan.parent();
             const secondLastChar = $targetSpan.val().charAt($textarea.val().length - 2);
-            let innerSpans = $parentPre.find("span");
+            let innerSpans = BlogUtil.$targetPre.find("span");
 
             /*
             * space bar keyboard btn pressed event is processed here
@@ -137,7 +132,7 @@ $(() => {
                 * when space bar is pressed more than twice
                 * */
                 let $newLine = null;
-                const lastOne = $targetSpan.parent().find(".new-line");
+                const lastOne = BlogUtil.$targetPre.find(".new-line");
 
                 lastOne.removeClass("new-line");
                 if (lastOne.html() === '&nbsp;') {
@@ -150,11 +145,11 @@ $(() => {
                     $newLine.addClass("new-line");
                 }
 
-                $targetSpan.parent().append($newLine);
+                BlogUtil.$targetPre.append($newLine);
 
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
+                const width = BlogUtil.letterWidthConverter(' ');
 
-                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("add", ' ', width);
             } else if (secondLastChar && secondLastChar == ' ') {
                 /*
                 * when space bar is pressed twice
@@ -166,14 +161,14 @@ $(() => {
                 const $newLine = $("<span>&nbsp;</span>");
 
                 $newLine.addClass("new-line");
-                $targetSpan.parent().append($spaceA);
-                $targetSpan.parent().append($newLine);
+                BlogUtil.$targetPre.append($spaceA);
+                BlogUtil.$targetPre.append($newLine);
 
                 if (spareStr) {
                     const $spare = $(`<span>${spareStr}</span>`);
-                    $targetSpan.parent().append($spare);
+                    BlogUtil.$targetPre.append($spare);
 
-                    innerSpans = $parentPre.find("span");
+                    innerSpans = BlogUtil.$targetPre.find("span");
 
                     const spanList = [];
                     innerSpans.each((index, span) => {
@@ -182,17 +177,17 @@ $(() => {
 
                     const combinedSpan = spanList.join("");
 
-                    $parentPre.empty();
+                    BlogUtil.$targetPre.empty();
                     $targetSpan = $(`<span>${combinedSpan}</span>`);
-                    $parentPre.append($targetSpan);
+                    BlogUtil.$targetPre.append($targetSpan);
                 }
 
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ');
-                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
+                const width = BlogUtil.letterWidthConverter(' ');
+                BlogUtil.moveCursorOneStepHorizontally("add", ' ', width);
             } else {
-                const width = BlogUtil.letterWidthConverter($targetSpan, $wpDraftSpan, ' ')
+                const width = BlogUtil.letterWidthConverter(' ')
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"]) + ' ' + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
-                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("add", ' ', width);
             }
 
             BlogUtil.Index["text"] = BlogUtil.Index["cursor"] - BlogUtil.Index["origin"];
@@ -203,8 +198,7 @@ $(() => {
         /*
         * the lastChar cannot be a space anymore from here
         * */
-        const $parentPre = $targetSpan.parent();
-        const innerSpans = $parentPre.find("span");
+        const innerSpans = BlogUtil.$targetPre.find("span");
 
         if (innerSpans.length > 1) {
             let spanList = [];
@@ -214,9 +208,9 @@ $(() => {
 
             const combinedSpan = spanList.join("");
 
-            $parentPre.empty();
+            BlogUtil.$targetPre.empty();
             $targetSpan = $(`<span>${combinedSpan}</span>`);
-            $parentPre.append($targetSpan);
+            BlogUtil.$targetPre.append($targetSpan);
         }
 
         if (BlogUtil.containsKorean(lastChar)) {
@@ -229,7 +223,7 @@ $(() => {
             if (BlogUtil.Index["origin"] + $textarea.val().length - BlogUtil.Index["cursor"]) {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["origin"] + BlogUtil.Index["text"]) + $textarea.val().slice(BlogUtil.Index["text"]) + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
 
-                BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
+                BlogUtil.moveCursorOneStepHorizontally("add", lastChar, lastCharwidth);
             } else {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["origin"] + BlogUtil.Index["text"]) + $textarea.val().slice(BlogUtil.Index["text"]) + $targetSpan.text().slice(BlogUtil.Index["origin"] + BlogUtil.Index["text"] + 1));
             }
@@ -241,7 +235,7 @@ $(() => {
             }
             $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"])  + lastChar + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
 
-            BlogUtil.moveCursorOneStepHorizontally("add", $targetSpan.parent(), $cursor, $wpWrapper, width);
+            BlogUtil.moveCursorOneStepHorizontally("add", lastChar, lastCharwidth);
             BlogUtil.Index["text"]++;
         }
     });
@@ -268,18 +262,16 @@ $(() => {
         const $textarea = $(".wp-textarea-wrapper textarea");
         $textarea.focus();
     })
-
-    init();
 })
 
 const init = () => {
+    BlogUtil.init($(".wp-textarea-wrapper"), $(".wp-code-draft span"), $(".wp-code .wp-line"), $(".wp-core .cursors .cursor"))
+
     const workplaceWidth = document.querySelector(".workplace-wrapper").offsetWidth;
     document.querySelector(".publish-footer").style.width = workplaceWidth + 'px';
 
     // initialize cursor size
     const lineHeight = parseFloat($(".wp-placeholder").css("line-height"));
-    $(".cursors .cursor").css("height", lineHeight + "px");
-
-    const $wpWrapper = $(".wp-textarea-wrapper");
-    $wpWrapper.css("top", $(".wp-textarea-wrapper").height() + "px");
+    BlogUtil.$cursor.css("height", lineHeight + "px");
+    BlogUtil.$txtareaWrapper.css("top", $(".wp-textarea-wrapper").height() + "px");
 }
