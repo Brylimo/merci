@@ -25,6 +25,7 @@ $(() => {
     });
 
     $(document).on("keydown", (event) => {
+        const $focusCtrArea = $(".wp > textarea");
         const $textarea = BlogUtil.$txtareaWrapper.find("textarea").first();
         let $targetSpan = BlogUtil.$targetPre.find("span").first();
 
@@ -32,6 +33,10 @@ $(() => {
             if (event.key === "ArrowLeft") { // press ArrowLeft keyboard btn -> one step move cursor to left
                 if (BlogUtil.Index["cursor"] < 1) return;
                 $textarea.val('');
+                if (event.originalEvent.isComposing) {
+                    $focusCtrArea.focus();
+                    return;
+                }
 
                 let leftChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
                 const width = BlogUtil.letterWidthConverter(leftChar);
@@ -67,6 +72,15 @@ $(() => {
             }*/
         }
     });
+
+    $(".wp > textarea").on("keydown",function (event) {
+        BlogUtil.timerPlayer();
+        BlogUtil.isActive = true;
+
+        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
+        $textarea.focus();
+        $(this).val('');
+    })
 
     $(".wp-textarea-wrapper textarea").on("input", (event) => {
         const $wpText = $(".wp-txt");
@@ -250,7 +264,7 @@ $(() => {
         }
     });
 
-    $(".wp").on("click", (event) => {
+    $(".wp-core").on("click", (event) => {
         const $placeholder = $(".wp-placeholder");
         if ($placeholder[0]) {
             $placeholder.hide();
@@ -259,7 +273,7 @@ $(() => {
         BlogUtil.timerPlayer();
         BlogUtil.isActive = true;
 
-        const $textarea = $(".wp-textarea-wrapper textarea");
+        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
         $textarea.focus();
     })
 })
