@@ -157,7 +157,7 @@ class BlogUtil {
             }
             this.lineList[index].status = "settle";
 
-            this.chainedLineOverflowHandler(lineIdx + 1);
+            this.chainedLineOverflowHandler(index + 1);
         } else {
             /* exit condition */
             this.lineList[index].status = "unsettle";
@@ -169,7 +169,14 @@ class BlogUtil {
         const $targetSpan = this.$targetPre.find("span");
         const index = lineIdx;
 
-
+        if (this.lineList[index].status === "unsettle") {
+            this.lineList[index + 1].firstIdx--;
+            this.chainedLineDeletingLetterHandler(index + 1);
+        } else if (this.lineList[index].status === "unsettle") {
+            /* exit condition */
+            this.lineList[index + 1].firstIdx--;
+            return;
+        }
     }
 
     static moveCursorOneStepHorizontally(kind, targetChar, width) {
@@ -238,7 +245,7 @@ class BlogUtil {
 
                 this.$cursor.css("left", width + "px"); this.$cursor.css("top", topValue + "px");
                 this.$txtareaWrapper.css("left", width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
-                this.lineList[this.Index["line"]] = "settle";
+                this.lineList[this.Index["line"]].status = "settle";
 
                 this.Index["line"]++;
                 if (kind === "add" && this.lineList.length === this.Index["line"]) {
@@ -303,7 +310,7 @@ class BlogUtil {
                         this.lineList[i].firstIdx++;
                     }
                 } else if (width < 0) {
-                    this.chainedLineDeletingLetterHandler();
+                    this.chainedLineDeletingLetterHandler(this.Index["line"]);
                     this.lineList[this.Index["line"]].count--;
                     for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
                         this.lineList[i].firstIdx--;
