@@ -34,6 +34,7 @@ $(() => {
                 if (BlogUtil.Index["cursor"] < 1) return;
                 $textarea.val('');
                 if (event.originalEvent.isComposing) {
+                    // for the mac OS korean processing system
                     $focusCtrArea.focus();
                     return;
                 }
@@ -134,10 +135,15 @@ $(() => {
         * if the last character of the textarea is space, then we are gonna process space
         * */
         if (lastChar == ' ') {
+            /* space acts like a korean character when it comes to line moving*/
+            if (BlogUtil.isCodeTypeChanged === 0) {
+                BlogUtil.isCodeTypeChanged = 2;
+            } else if (BlogUtil.isCodeTypeChanged === 1 || BlogUtil.isCodeTypeChanged === 4) {
+                BlogUtil.isCodeTypeChanged = 3;
+            }
 
-            const secondLastChar = $targetSpan.val().charAt($textarea.val().length - 2);
+            const secondLastChar = $textarea.val().charAt(BlogUtil.Index["text"] - 1);
             let innerSpans = BlogUtil.$targetPre.find("span");
-
             /*
             * space bar keyboard btn pressed event is processed here
             * */
@@ -217,7 +223,12 @@ $(() => {
         if (innerSpans.length > 1) {
             let spanList = [];
             innerSpans.each((index, span) => {
-                spanList.push($(span).text());
+                if (index === innerSpans.length - 1) {
+                    /* the last one gotta be just a normal space.. */
+                    spanList.push(' ');
+                } else {
+                    spanList.push($(span).text());
+                }
             });
 
             const combinedSpan = spanList.join("");

@@ -63,6 +63,7 @@
 .workplace-wrapper .workplace .wp {
     padding: 1rem;
     height: calc(100% - 1.92rem);
+    overflow: auto;
 }
 
 .wp-core {

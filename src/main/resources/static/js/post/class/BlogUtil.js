@@ -132,25 +132,55 @@ class BlogUtil {
         return width;
     }
 
-    static lineBubbleHandler($targetSpan, coreWidth, lineIdx) {
-        if (this.lineList[this.Index["line"]].width > coreWidth) {
-            const lastChar = $targetSpan.text()[this.lineList[this.Index["line"] + 1].firstIdx - 1];
+    static chainedLineOverflowHandler(lineIdx) {
+        const coreWidth = this.$txtareaWrapper.parent()[0].getBoundingClientRect().width;
+        const $targetSpan = this.$targetPre.find("span");
+        const index = lineIdx;
+
+        if (this.lineList[index].width > coreWidth) {
+            // it means the current line overflows.. but the cursor isn't at the last letter of the line
+            const lastChar = $targetSpan.text()[this.lineList[index].firstIdx + this.lineList[index].count];
             const letterWidth = this.letterWidthConverter(lastChar);
+
+            this.lineList[index].width -= letterWidth;
+            this.lineList[index].count -= 1;
+
+            if (lastChar !== ' ') {
+                if (!this.lineList[index + 1]) { // when new line is needed
+                    this.lineList.push(new LineObj(letterWidth, this.lineList[index].firstIdx + this.lineList[index].count, 1));
+                    return; /* exit condition */
+                }
+
+                this.lineList[index + 1].firstIdx--;
+                this.lineList[index + 1].count += 1;
+                this.lineList[index + 1].width += letterWidth;
+            }
+            this.lineList[index].status = "settle";
+
+            this.chainedLineOverflowHandler(lineIdx + 1);
         } else {
+            /* exit condition */
+            this.lineList[index].status = "unsettle";
             return;
         }
     }
 
+    static chainedLineDeletingLetterHandler(lineIdx) {
+        const $targetSpan = this.$targetPre.find("span");
+        const index = lineIdx;
+
+
+    }
+
     static moveCursorOneStepHorizontally(kind, targetChar, width) {
-        console.log("w", targetChar, width);
         const coreWidth = this.$txtareaWrapper.parent()[0].getBoundingClientRect().width;
         const leftValue = parseFloat(this.$cursor.css("left")) + width;
 
-        if ((kind === "arrowRight" && this.lineList[this.Index["line"]].width < leftValue) ||
-            (kind === "add" && coreWidth < leftValue)) { // move to new line
-            console.log("gaka")
+        if ((kind === "arrowRight" && this.lineList[this.Index["line"]].width + 1 < leftValue) ||
+            (kind === "add" && coreWidth < leftValue)) { // move to new line, +1 means allowable error
             const lineHeight = parseFloat(this.$targetPre.css("line-height"));
             const topValue = parseFloat(this.$cursor.css("top")) + lineHeight;
+            let codeFourSpecialCaseFlag = false;
 
             if (kind === "add" && BlogUtil.isCodeTypeChanged === 4) {
                 // special case
@@ -158,13 +188,21 @@ class BlogUtil {
                 let firstIdx = this.Index["cursor"];
                 let spaceCnt = 0;
                 let initialValue = 0;
+                let cnt = 0;
 
                 for (let i = selectedText.length - 1; i>= 0; i--) {
                     const char = selectedText[i];
-                    if (this.containsKorean(char)) {
-                        if (selectedText[i+1] == '.' || selectedText[i+1] == ',') {
-                            let width = this.letterWidthConverter(char);
-                            initialValue = width;
+                    if (this.containsKorean(char) || char === ' ') { // space acts like a korean alphabet here
+                        if (char !== ' ' && (selectedText[i+1] == '.' || selectedText[i+1] == ',')) {
+
+                            if (i === this.lineList[this.Index["line"]].firstIdx) {
+                                // special case, same as else case code eg.) 나............. & new line
+                                codeFourSpecialCaseFlag = true;
+                            } else {
+                                let innerWidth = this.letterWidthConverter(char);
+                                initialValue = innerWidth;
+                                cnt++;
+                            }
                         } else {
                             firstIdx += 1;
                         }
@@ -174,33 +212,37 @@ class BlogUtil {
                     }
                 }
 
-                this.lineList[this.Index["line"]].width = parseFloat(this.$cursor.css("left")) - initialValue - (width * (spaceCnt - 1));
+                if (!codeFourSpecialCaseFlag) {
+                    this.lineList[this.Index["line"]].width = parseFloat(this.$cursor.css("left")) - initialValue - (width * (spaceCnt - 1));
+                    this.lineList[this.Index["line"]].count -= (cnt + spaceCnt - 1);
 
-                this.$cursor.css("left", (initialValue + width * spaceCnt) + "px"); this.$cursor.css("top", topValue + "px");
-                this.$txtareaWrapper.css("left", (initialValue + width * spaceCnt) + "px"); this.$txtareaWrapper.css("top", topValue + "px");
+                    this.$cursor.css("left", (initialValue + width * spaceCnt) + "px"); this.$cursor.css("top", topValue + "px");
+                    this.$txtareaWrapper.css("left", (initialValue + width * spaceCnt) + "px"); this.$txtareaWrapper.css("top", topValue + "px");
 
-                for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
-                    this.lineList[i].firstIdx++;
+                    for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
+                        this.lineList[i].firstIdx++;
+                    }
+
+                    this.Index["line"]++;
+                    this.lineList.splice(this.Index["line"], 0, new LineObj(initialValue + width * spaceCnt, firstIdx - spaceCnt, cnt + spaceCnt));
                 }
 
-                this.Index["line"]++;
-                this.lineList.splice(this.Index["line"], 0, new LineObj(initialValue + width * spaceCnt, firstIdx - spaceCnt));
-            } else {
+                this.lineList[this.Index["line"]].status = "unsettle";
+            }
+
+            if (!(kind === "add" && BlogUtil.isCodeTypeChanged === 4) || codeFourSpecialCaseFlag) {
+                // normal case
                 if (kind === "add") {
                     this.lineList[this.Index["line"]].width = parseFloat(this.$cursor.css("left"));
                 }
 
-                /*if (targetChar === ' ') {
-                    width = 0;
-                    BlogUtil.Index["cursor"]++;
-                }*/
-
                 this.$cursor.css("left", width + "px"); this.$cursor.css("top", topValue + "px");
                 this.$txtareaWrapper.css("left", width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
+                this.lineList[this.Index["line"]] = "settle";
 
                 this.Index["line"]++;
                 if (kind === "add" && this.lineList.length === this.Index["line"]) {
-                    this.lineList.splice(this.Index["line"], 0, new LineObj(width, this.Index["cursor"]));
+                    this.lineList.splice(this.Index["line"], 0, new LineObj(width, this.Index["cursor"], 1));
                 }
             }
 
@@ -254,22 +296,15 @@ class BlogUtil {
                     this.lineList[this.Index["line"]].width = 0;
                 }
 
-                if (this.lineList[this.Index["line"]].width > coreWidth) {
-                    // it means the current line overflows.. but the cursor isn't at the last letter of the line
-                    const lastChar = this.$targetPre.find("span").first().text()[this.lineList[this.Index["line"] + 1].firstIdx - 1];
-                    const letterWidth = this.letterWidthConverter(lastChar);
-                    this.lineList[this.Index["line"]].width -= letterWidth;
-                    if (lastChar !== ' ') {
-                        this.lineList[this.Index["line"] + 1].firstIdx--;
-                        this.lineList[this.Index["line"] + 1].width += letterWidth;
-                    }
-                }
-
                 if (width > 0) {
+                    this.chainedLineOverflowHandler(this.Index["line"]);
+                    this.lineList[this.Index["line"]].count++;
                     for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
                         this.lineList[i].firstIdx++;
                     }
                 } else if (width < 0) {
+                    this.chainedLineDeletingLetterHandler();
+                    this.lineList[this.Index["line"]].count--;
                     for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
                         this.lineList[i].firstIdx--;
                     }
