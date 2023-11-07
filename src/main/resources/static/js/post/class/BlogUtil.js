@@ -165,18 +165,90 @@ class BlogUtil {
         }
     }
 
+    /*
+    * recursively reflects the letter deleting along the line
+    * */
     static chainedLineDeletingLetterHandler(lineIdx) {
+        const coreWidth = this.$txtareaWrapper.parent()[0].getBoundingClientRect().width;
         const $targetSpan = this.$targetPre.find("span");
-        const index = lineIdx;
 
-        if (this.lineList[index].status === "unsettle") {
-            this.lineList[index + 1].firstIdx--;
-            this.chainedLineDeletingLetterHandler(index + 1);
-        } else if (this.lineList[index].status === "unsettle") {
-            /* exit condition */
-            this.lineList[index + 1].firstIdx--;
-            return;
+        if (this.lineList[lineIdx].status === "unsettle") {
+            for (let i = lineIdx + 1; i < this.lineList.length; i++) {
+                this.lineList[i].firstIdx--;
+            }
+
+            if (this.lineList[lineIdx + 1]) { // check if next line exists, O -> code Four
+                const firstIdx = this.lineList[lineIdx + 1].firstIdx;
+                let lastIdx = this.lineList[lineIdx + 1].firstIdx + this.lineList[lineIdx + 1].count - 1;
+                if (this.containsKorean($targetSpan.text()[firstIdx])) {
+                    for (let i = firstIdx + 1; i < firstIdx + this.lineList[lineIdx + 1].count; i++) {
+                        if (this.containsKorean($targetSpan.text()[i])) {
+                            lastIdx = i;
+                            break;
+                        }
+                    }
+                } else {
+                    for (let i = firstIdx; i < firstIdx + this.lineList[lineIdx + 1].count; i++) {
+                        if (this.containsKorean($targetSpan.text()[i])) {
+                            lastIdx = i;
+                            break;
+                        }
+                    }
+                }
+
+                const text = $targetSpan.text().slice(firstIdx, lastIdx);
+                const textWidth = this.letterWidthConverter(text);
+
+                if (this.lineList[lineIdx].width + textWidth < coreWidth) {
+                    this.lineList[lineIdx].width += textWidth;
+                    this.lineList[lineIdx].count += lastIdx - firstIdx;
+                    this.lineList[lineIdx].status = "settle";
+
+                    this.lineList[lineIdx + 1].count -= lastIdx - firstIdx;
+                    if (this.lineList[lineIdx + 1].count === 0) {
+                        const before = this.lineList.slice(0, this.Index["line"]+1);
+                        const after = this.lineList.slice(this.Index["line"]+2);
+                        const mergedList = before.concat(after);
+
+                        this.lineList = mergedList;
+                    } else {
+                        this.lineList[lineIdx + 1].width -= textWidth;
+                        this.lineList[lineIdx + 1].firstIdx += lastIdx - firstIdx;
+                    }
+                }
+            }
+        } else if (this.lineList[lineIdx].status === "settle") {
+            if (this.lineList[lineIdx + 1]) { // check if next line exists
+                const firstChar = $targetSpan.text()[this.lineList[lineIdx + 1].firstIdx];
+                const firstLetterWidth = this.letterWidthConverter(firstChar);
+
+                if (this.lineList[lineIdx].width + firstLetterWidth < coreWidth) {
+                    // normal case (settle)
+                    this.lineList[lineIdx].width += firstLetterWidth;
+                    this.lineList[lineIdx].count += 1;
+
+                    /* subtract width value first */
+                    this.lineList[lineIdx + 1].width -= firstLetterWidth;
+                    this.lineList[lineIdx + 1].count -= 1;
+
+                    if (this.lineList[lineIdx + 1].count === 0) {
+                        /* if the count hits zero, we delete the LineObj object*/
+                        const before = this.lineList.slice(0, this.Index["line"]+1);
+                        const after = this.lineList.slice(this.Index["line"]+2);
+                        const mergedList = before.concat(after);
+
+                        this.lineList = mergedList;
+                        return;
+                    }
+
+                    this.chainedLineDeletingLetterHandler(lineIdx + 1);
+                }
+            } else {
+                this.lineList[lineIdx].status = "unsettle";
+            }
         }
+
+       return;
     }
 
     static moveCursorOneStepHorizontally(kind, targetChar, width) {
@@ -187,24 +259,30 @@ class BlogUtil {
             (kind === "add" && coreWidth < leftValue)) { // move to new line, +1 means allowable error
             const lineHeight = parseFloat(this.$targetPre.css("line-height"));
             const topValue = parseFloat(this.$cursor.css("top")) + lineHeight;
-            let codeFourSpecialCaseFlag = false;
+            const $targetSpan = this.$targetPre.find("span");
+            let normalCasePass = false;
 
-            if (kind === "add" && BlogUtil.isCodeTypeChanged === 4) {
+            const LineFirstIdx = this.lineList[this.Index["line"]].firstIdx;
+            const LineLastIdx = this.lineList[this.Index["line"]].firstIdx + this.lineList[this.Index["line"]].count;
+            if (kind === "add" && !this.containsKorean(targetChar)) {
                 // special case
-                const selectedText = this.$targetPre.find("span").first().text().slice(0, this.Index["cursor"] + 1);
-                let firstIdx = this.Index["cursor"];
+                const selectedText = $targetSpan.text().slice(LineFirstIdx, LineLastIdx + 1);
+                let firstIdx = LineLastIdx - 1;
                 let spaceCnt = 0;
                 let initialValue = 0;
                 let cnt = 0;
 
                 for (let i = selectedText.length - 1; i>= 0; i--) {
                     const char = selectedText[i];
+                    console.log("dd", char)
                     if (this.containsKorean(char) || char === ' ') { // space acts like a korean alphabet here
-                        if (char !== ' ' && (selectedText[i+1] == '.' || selectedText[i+1] == ',')) {
+                        if (char !== ' ' && (selectedText[i+1] == '.' || selectedText[i+1] == ',' || selectedText[i+1] == '!' ||
+                                            selectedText[i+1] == "'" || selectedText[i+1] == '"' || selectedText[i+1] == '/' ||
+                                            selectedText[i+1] == '?' || selectedText[i+1] == ')' || selectedText[i+1] == '(')) {
 
                             if (i === this.lineList[this.Index["line"]].firstIdx) {
                                 // special case, same as else case code eg.) 나............. & new line
-                                codeFourSpecialCaseFlag = true;
+                                normalCasePass = true;
                             } else {
                                 let innerWidth = this.letterWidthConverter(char);
                                 initialValue = innerWidth;
@@ -219,7 +297,11 @@ class BlogUtil {
                     }
                 }
 
-                if (!codeFourSpecialCaseFlag) {
+                if (spaceCnt === selectedText.length) {
+                    normalCasePass = true;
+                }
+
+                if (!normalCasePass) {
                     this.lineList[this.Index["line"]].width = parseFloat(this.$cursor.css("left")) - initialValue - (width * (spaceCnt - 1));
                     this.lineList[this.Index["line"]].count -= (cnt + spaceCnt - 1);
 
@@ -237,7 +319,7 @@ class BlogUtil {
                 this.lineList[this.Index["line"]].status = "unsettle";
             }
 
-            if (!(kind === "add" && BlogUtil.isCodeTypeChanged === 4) || codeFourSpecialCaseFlag) {
+            if (!(kind === "add" && !this.containsKorean($targetSpan.text()[LineLastIdx])) || normalCasePass) {
                 // normal case
                 if (kind === "add") {
                     this.lineList[this.Index["line"]].width = parseFloat(this.$cursor.css("left"));
@@ -252,8 +334,6 @@ class BlogUtil {
                     this.lineList.splice(this.Index["line"], 0, new LineObj(width, this.Index["cursor"], 1));
                 }
             }
-
-            this.isCodeTypeChanged = 0;
         } else if (leftValue <= 0) { // delete current line & go to previous line
             if ((kind === "backspace" && this.Index["line"] === 0) || (kind === "arrowLeft" && parseFloat(this.$cursor.css("left")) > 0)) {
                 this.$cursor.css("left", leftValue + "px");
@@ -310,11 +390,8 @@ class BlogUtil {
                         this.lineList[i].firstIdx++;
                     }
                 } else if (width < 0) {
-                    this.chainedLineDeletingLetterHandler(this.Index["line"]);
                     this.lineList[this.Index["line"]].count--;
-                    for (let i = this.Index["line"] + 1; i < this.lineList.length; i++) {
-                        this.lineList[i].firstIdx--;
-                    }
+                    this.chainedLineDeletingLetterHandler(this.Index["line"]);
                 }
             }
         }
