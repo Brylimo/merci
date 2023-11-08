@@ -177,10 +177,68 @@ class BlogUtil {
                 this.lineList[i].firstIdx--;
             }
 
+            if (this.lineList[lineIdx - 1] && this.lineList[lineIdx - 1].status === "unsettle") { // check previous line
+                const firstIdx = this.lineList[lineIdx].firstIdx;
+                let lastIdx = this.lineList[lineIdx].firstIdx + this.lineList[lineIdx].count;
+                if (this.lineList[lineIdx].count !== 1 && this.containsKorean($targetSpan.text()[firstIdx])) {
+                    for (let i = firstIdx + 1; i < firstIdx + this.lineList[lineIdx].count; i++) {
+                        if (this.containsKorean($targetSpan.text()[i])) {
+                            lastIdx = i;
+                            break;
+                        }
+                    }
+                } else {
+                    for (let i = firstIdx; i < firstIdx + this.lineList[lineIdx].count; i++) {
+                        if (this.containsKorean($targetSpan.text()[i])) {
+                            lastIdx = i;
+                            break;
+                        }
+                    }
+                }
+
+                const text = $targetSpan.text().slice(firstIdx, lastIdx);
+                const textWidth = this.letterWidthConverter(text);
+
+                if (this.lineList[lineIdx - 1].width + textWidth < coreWidth) {
+                    const lineHeight = parseFloat(this.$targetPre.css("line-height"));
+                    const topValue = parseFloat(this.$cursor.css("top")) - lineHeight;
+
+                    this.lineList[lineIdx - 1].count += lastIdx - firstIdx;
+                    this.lineList[lineIdx].count -= lastIdx - firstIdx;
+
+                    if (this.lineList[lineIdx].count === 0) { // the line's gone
+                        const before = this.lineList.slice(0, this.Index["line"]);
+                        const after = this.lineList.slice(this.Index["line"]+1);
+                        const mergedList = before.concat(after);
+
+                        this.lineList = mergedList;
+
+                        this.$cursor.css("left", parseFloat(this.$cursor.css("left")) + this.lineList[lineIdx - 1].width + "px"); this.$cursor.css("top", topValue + "px");
+                        this.$txtareaWrapper.css("left", parseFloat(this.$cursor.css("left")) + this.lineList[lineIdx - 1].width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
+
+                        this.Index["line"]--;
+                    } else {
+                        this.lineList[lineIdx].width -= textWidth;
+                        this.lineList[lineIdx].firstIdx += lastIdx - firstIdx;
+
+                        if (lastIdx > this.Index["cursor"]) {
+                            this.$cursor.css("left", parseFloat(this.$cursor.css("left")) + this.lineList[lineIdx - 1].width + "px"); this.$cursor.css("top", topValue + "px");
+                            this.$txtareaWrapper.css("left", parseFloat(this.$txtareaWrapper.css("left")) + this.lineList[lineIdx - 1].width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
+
+                            this.Index["line"]--;
+                        }
+                    }
+
+                    this.lineList[lineIdx - 1].width += textWidth;
+                    this.lineList[lineIdx - 1].status = "settle";
+                }
+            }
+
             if (this.lineList[lineIdx + 1]) { // check if next line exists, O -> code Four
                 const firstIdx = this.lineList[lineIdx + 1].firstIdx;
-                let lastIdx = this.lineList[lineIdx + 1].firstIdx + this.lineList[lineIdx + 1].count - 1;
-                if (this.containsKorean($targetSpan.text()[firstIdx])) {
+                let lastIdx = this.lineList[lineIdx + 1].firstIdx + this.lineList[lineIdx + 1].count;
+                console.log("ttt", this.lineList[lineIdx + 1].count, firstIdx, lastIdx)
+                if (this.lineList[lineIdx + 1].count !== 1 && this.containsKorean($targetSpan.text()[firstIdx])) {
                     for (let i = firstIdx + 1; i < firstIdx + this.lineList[lineIdx + 1].count; i++) {
                         if (this.containsKorean($targetSpan.text()[i])) {
                             lastIdx = i;
@@ -219,9 +277,11 @@ class BlogUtil {
             }
         } else if (this.lineList[lineIdx].status === "settle") {
             if (this.lineList[lineIdx + 1]) { // check if next line exists
+                // todo 마마마마......................바바바바바바
                 const firstChar = $targetSpan.text()[this.lineList[lineIdx + 1].firstIdx];
                 const firstLetterWidth = this.letterWidthConverter(firstChar);
 
+                console.log("man", this.lineList[lineIdx].width + firstLetterWidth, coreWidth)
                 if (this.lineList[lineIdx].width + firstLetterWidth < coreWidth) {
                     // normal case (settle)
                     this.lineList[lineIdx].width += firstLetterWidth;
@@ -242,6 +302,8 @@ class BlogUtil {
                     }
 
                     this.chainedLineDeletingLetterHandler(lineIdx + 1);
+                } else {
+                    this.lineList[lineIdx + 1].firstIdx--;
                 }
             } else {
                 this.lineList[lineIdx].status = "unsettle";
@@ -266,15 +328,14 @@ class BlogUtil {
             const LineLastIdx = this.lineList[this.Index["line"]].firstIdx + this.lineList[this.Index["line"]].count;
             if (kind === "add" && !this.containsKorean(targetChar)) {
                 // special case
-                const selectedText = $targetSpan.text().slice(LineFirstIdx, LineLastIdx + 1);
-                let firstIdx = LineLastIdx - 1;
+                const selectedText = $targetSpan.text().slice(0, LineLastIdx + 1);
+                let firstIdx = LineLastIdx;
                 let spaceCnt = 0;
                 let initialValue = 0;
                 let cnt = 0;
 
-                for (let i = selectedText.length - 1; i>= 0; i--) {
+                for (let i = LineLastIdx; i>= LineFirstIdx; i--) {
                     const char = selectedText[i];
-                    console.log("dd", char)
                     if (this.containsKorean(char) || char === ' ') { // space acts like a korean alphabet here
                         if (char !== ' ' && (selectedText[i+1] == '.' || selectedText[i+1] == ',' || selectedText[i+1] == '!' ||
                                             selectedText[i+1] == "'" || selectedText[i+1] == '"' || selectedText[i+1] == '/' ||
@@ -297,7 +358,7 @@ class BlogUtil {
                     }
                 }
 
-                if (spaceCnt === selectedText.length) {
+                if (spaceCnt === this.lineList[this.Index["line"]].count + 1) {
                     normalCasePass = true;
                 }
 
@@ -335,17 +396,21 @@ class BlogUtil {
                 }
             }
         } else if (leftValue <= 0) { // delete current line & go to previous line
-            if ((kind === "backspace" && this.Index["line"] === 0) || (kind === "arrowLeft" && parseFloat(this.$cursor.css("left")) > 0)) {
+            if ((kind === "backspace" && this.Index["line"] === 0) || (kind === "arrowLeft" && parseFloat(this.$cursor.css("left")) > 1)) { // originally zero but 1 is an allowable error
                 this.$cursor.css("left", leftValue + "px");
                 this.$txtareaWrapper.css("left", leftValue + "px");
                 BlogUtil.Index["cursor"]--;
 
                 if (kind === "backspace") {
-                    const before = this.lineList.slice(0, this.Index["line"]);
-                    const after = this.lineList.slice(this.Index["line"]+1);
-                    const mergedList = before.concat(after);
+                    this.lineList[0].count--;
 
-                    this.lineList = mergedList;
+                    if (this.lineList[0].count === 0) {
+                        const before = this.lineList.slice(0, this.Index["line"]);
+                        const after = this.lineList.slice(this.Index["line"]+1);
+                        const mergedList = before.concat(after);
+
+                        this.lineList = mergedList;
+                    }
                 }
                 return;
             }
@@ -357,11 +422,16 @@ class BlogUtil {
                 this.$cursor.css("left", this.lineList[this.Index["line"] - 1].width + "px"); this.$cursor.css("top", topValue + "px");
                 this.$txtareaWrapper.css("left", this.lineList[this.Index["line"] - 1].width + "px"); this.$txtareaWrapper.css("top", topValue + "px");
 
-                const before = this.lineList.slice(0, this.Index["line"]);
-                const after = this.lineList.slice(this.Index["line"]+1);
-                const mergedList = before.concat(after);
+                this.lineList[this.Index["line"]].count--;
 
-                this.lineList = mergedList;
+                if (this.lineList[this.Index["line"]].count === 0) {
+                    const before = this.lineList.slice(0, this.Index["line"]);
+                    const after = this.lineList.slice(this.Index["line"]+1);
+                    const mergedList = before.concat(after);
+
+                    this.lineList = mergedList;
+                }
+
                 this.Index["line"]--;
             } else if (kind === "arrowLeft") {
                 this.$cursor.css("left", this.lineList[this.Index["line"] - 1].width + width + "px"); this.$cursor.css("top", topValue + "px");
