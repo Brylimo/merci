@@ -54,7 +54,15 @@ $(() => {
                 BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
                 BlogUtil.Index["text"] = 0;
             } else if (event.key === "ArrowUp") {
-                /*BlogUtil.moveCursorOneStepVertically("arrowRight", $targetSpan.parent(), $cursor, $wpWrapper, 3);*/
+                if (BlogUtil.Index["line"]  < 1) return;
+                $textarea.val('');
+
+                BlogUtil.moveCursorOneStepVertically("arrowUp");
+            } else if (event.key === "ArrowDown") {
+                if (BlogUtil.Index["line"]  >= BlogUtil.lineList.length - 1) return;
+                $textarea.val('');
+
+                BlogUtil.moveCursorOneStepVertically("arrowDown");
             } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
                 if (BlogUtil.Index["cursor"] < 1) return;
 
@@ -135,14 +143,8 @@ $(() => {
         * if the last character of the textarea is space, then we are gonna process space
         * */
         if (lastChar == ' ') {
-            /* space acts like a korean character when it comes to line moving*/
-            if (BlogUtil.isCodeTypeChanged === 0) {
-                BlogUtil.isCodeTypeChanged = 2;
-            } else if (BlogUtil.isCodeTypeChanged === 1 || BlogUtil.isCodeTypeChanged === 4) {
-                BlogUtil.isCodeTypeChanged = 3;
-            }
 
-            const secondLastChar = $textarea.val().charAt(BlogUtil.Index["text"] - 1);
+            const secondLastChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
             let innerSpans = BlogUtil.$targetPre.find("span");
             /*
             * space bar keyboard btn pressed event is processed here
@@ -239,11 +241,6 @@ $(() => {
         }
 
         if (BlogUtil.containsKorean(lastChar)) {
-            if (BlogUtil.isCodeTypeChanged === 0) {
-                BlogUtil.isCodeTypeChanged = 2;
-            } else if (BlogUtil.isCodeTypeChanged === 1 || BlogUtil.isCodeTypeChanged === 4) {
-                BlogUtil.isCodeTypeChanged = 3;
-            }
 
             if (BlogUtil.Index["origin"] + $textarea.val().length - BlogUtil.Index["cursor"]) {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["origin"] + BlogUtil.Index["text"]) + $textarea.val().slice(BlogUtil.Index["text"]) + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
@@ -253,11 +250,6 @@ $(() => {
                 $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["origin"] + BlogUtil.Index["text"]) + $textarea.val().slice(BlogUtil.Index["text"]) + $targetSpan.text().slice(BlogUtil.Index["origin"] + BlogUtil.Index["text"] + 1));
             }
         } else {
-            if (BlogUtil.isCodeTypeChanged === 0) {
-                BlogUtil.isCodeTypeChanged = 1;
-            } else if (BlogUtil.isCodeTypeChanged === 2 || BlogUtil.isCodeTypeChanged === 3) {
-                BlogUtil.isCodeTypeChanged = 4;
-            }
             $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"])  + lastChar + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
 
             BlogUtil.moveCursorOneStepHorizontally("add", lastChar, lastCharwidth);
