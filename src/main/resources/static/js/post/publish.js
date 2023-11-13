@@ -56,11 +56,13 @@ $(() => {
             } else if (event.key === "ArrowUp") {
                 if (BlogUtil.Index["line"]  < 1) return;
                 $textarea.val('');
+                BlogUtil.Index["text"] = 0;
 
                 BlogUtil.moveCursorOneStepVertically("arrowUp");
             } else if (event.key === "ArrowDown") {
                 if (BlogUtil.Index["line"]  >= BlogUtil.lineList.length - 1) return;
                 $textarea.val('');
+                BlogUtil.Index["text"] = 0;
 
                 BlogUtil.moveCursorOneStepVertically("arrowDown");
             } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
@@ -73,6 +75,11 @@ $(() => {
                 const width = BlogUtil.letterWidthConverter(targetChar);
                 BlogUtil.moveCursorOneStepHorizontally("backspace", targetChar, width*(-1));
                 BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
+            } else if (event.ctrlKey && (event.key === 'v' || event.code === 'KeyV')) { // press Ctrl + V btn
+                $textarea.val('');
+                BlogUtil.Index["text"] = 0;
+
+                BlogUtil.Flag["paste"] = true;
             }
 
             /*if (event.keyCode === 13) { // enter
@@ -102,6 +109,19 @@ $(() => {
 
         let lastChar = $textarea.val().charAt($textarea.val().length - 1);
         const lastCharwidth = BlogUtil.letterWidthConverter(lastChar);
+
+        /*
+        * when the paste flag is on this if statement takes action
+        * */
+        if (BlogUtil.Flag["paste"]) {
+            console.log($textarea.val())
+            // todo process paste action
+
+
+
+            BlogUtil.Flag["paste"] = false;
+            return;
+        }
 
         if (BlogUtil.Index["origin"] + $textarea.val().length <= BlogUtil.Index["origin"] + BlogUtil.Index["text"]) {
             /*
@@ -262,16 +282,38 @@ $(() => {
         $(".wp .cursors").removeClass("cursor-visible");
         BlogUtil.isActive = false;
 
+        const $textarea = BlogUtil.$txtareaWrapper.find("textarea").first();
+        $textarea.val("")
+        BlogUtil.Index["text"] = 0
+
         if (BlogUtil.lineList.length === 0) {
             $(".wp-placeholder").show();
         }
     });
+
+    $(".wp-sizer").on("click", event => {
+        event.stopPropagation();
+        const $placeholder = $(".wp-placeholder");
+        if ($placeholder[0]) {
+            $placeholder.hide();
+        }
+
+        BlogUtil.mouseClickCursorMoveHandler(event.offsetX, event.offsetY)
+
+        BlogUtil.timerPlayer();
+        BlogUtil.isActive = true;
+
+        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
+        $textarea.focus();
+    })
 
     $(".wp-core").on("click", (event) => {
         const $placeholder = $(".wp-placeholder");
         if ($placeholder[0]) {
             $placeholder.hide();
         }
+
+        BlogUtil.mouseClickCursorInitializer(event.offsetY)
 
         BlogUtil.timerPlayer();
         BlogUtil.isActive = true;

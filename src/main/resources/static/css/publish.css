@@ -67,13 +67,16 @@
 }
 
 .wp-core {
-    height: 100%;
+    min-height: 100%;
     position: relative;
 }
 
 .wp-core .wp-scroll {
-    height: 100%;
     position: relative;
+}
+
+.wp-sizer {
+    cursor: text;
 }
 
 .wp-sizer .wp-placeholder {
@@ -94,7 +97,6 @@
     white-space: pre-wrap;
     word-break: normal;
     line-height: inherit;
-    cursor: text;
 }
 
 .workplace-wrapper .publish-footer {
