@@ -1,11 +1,19 @@
 /*
-* BlogUtil class uses LineObj class in a number of places
-* gotta import LineObj js class first
+* PostUtil class uses LineObj class and ParagraphObj class in many places
+* gotta import LineObj, ParaGraphObj js class first
 * */
+document.write('<script src="/js/post/class/ParagraphObj.js"></script>');
 document.write('<script src="/js/post/class/LineObj.js"></script>');
 // todo 띄어쓰기 처리 개발 요망
 
-class BlogUtil {
+class PostUtil {
+    /*
+    * root object of blog, only one root object is needed
+    * */
+    static root = {
+        paragraphList: []
+    }
+
     /* the wrapper div of main textarea
     * you gotta initialize it to properly use this utility class
     * jquery type html element form is needed
@@ -32,10 +40,10 @@ class BlogUtil {
     static $cursor = null;
 
     static timers = [];
-    static lineList = []; // list that remembers width of the each line
+    static lineList = []; // list that remembers width of the each line, 삭제 요망
     static isActive = false;
 
-    // index
+    // index 삭제 요망
     static Index = {
         cursor: 0, // cursor index
         text: 0, // text index
@@ -85,6 +93,13 @@ class BlogUtil {
         this.$cursor = $cursor;
     }
 
+    /*
+    * inspect if the input parameter is unicode or not
+    * */
+    static isUnicode(char) {
+        return char !== undefined && char.length === 1 && char !== char.normalize('NFC');
+    }
+
     static timerFn() {
         const target = $(".wp .cursors");
 
@@ -97,18 +112,18 @@ class BlogUtil {
 
     static timerPlayer() {
         let timerId = setTimeout(() => {
-            BlogUtil.timerFn();
+            PostUtil.timerFn();
 
-            BlogUtil.timers.splice(0);
-            BlogUtil.timerPlayer();
+            PostUtil.timers.splice(0);
+            PostUtil.timerPlayer();
         }, 450)
 
-        BlogUtil.timers.push(timerId);
+        PostUtil.timers.push(timerId);
     }
 
     static clearTimerPlayer() {
-        for (let i = 0; i < BlogUtil.timers.length; i++) {
-            clearTimeout(BlogUtil.timers[i]);
+        for (let i = 0; i < PostUtil.timers.length; i++) {
+            clearTimeout(PostUtil.timers[i]);
         }
     }
 
@@ -191,6 +206,31 @@ class BlogUtil {
         return width;
     }
 
+    static pasteHandler() {
+        // todo 복사하는데 시간이 걸리므로 dom 속성 변화 값을 감지해서 크기 값을 단일화하는 과정이 필요할거같음
+        const $textarea = PostUtil.$txtareaWrapper.find("textarea").first();
+        const $targetSpan = PostUtil.$targetPre.find("span").first();
+        const textareaTxt = $textarea.val()
+
+        let lines = textareaTxt.split('\n');
+
+        // only line 0
+        const line = lines[0];
+        const chunkSize = 30
+        let textWidth = 0;
+
+        for (let i = 0; i < line.length; i += chunkSize) {
+            const lineTxt = line.slice(i, i + chunkSize)
+            textWidth += this.letterWidthConverter(lineTxt);
+        }
+
+        $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["cursor"]) + lines[0] + $targetSpan.text().slice(PostUtil.Index["cursor"]));
+        this.lineList[this.Index["line"]].width += textWidth;
+        this.lineList[this.Index["line"]].count += lines[0].length;
+
+        this.chainedLineOverflowHandler(this.Index["line"])
+    }
+
     static chainedLineOverflowHandler(lineIdx) {
         const coreWidth = this.$txtareaWrapper.parent()[0].getBoundingClientRect().width;
         const $targetSpan = this.$targetPre.find("span");
@@ -198,21 +238,22 @@ class BlogUtil {
 
         if (this.lineList[index].width > coreWidth) {
             // it means the current line overflows.. but the cursor isn't at the last letter of the line
-            const lastChar = $targetSpan.text()[this.lineList[index].firstIdx + this.lineList[index].count];
-            const letterWidth = this.letterWidthConverter(lastChar);
+            while (this.lineList[index].width > coreWidth) {
+                const lastChar = $targetSpan.text()[this.lineList[index].firstIdx + this.lineList[index].count - 1];
+                const letterWidth = this.letterWidthConverter(lastChar);
 
-            this.lineList[index].width -= letterWidth;
-            this.lineList[index].count -= 1;
+                this.lineList[index].width -= letterWidth;
+                this.lineList[index].count -= 1;
 
-            if (lastChar !== ' ') {
-                if (!this.lineList[index + 1]) { // when new line is needed
-                    this.lineList.push(new LineObj(letterWidth, this.lineList[index].firstIdx + this.lineList[index].count, 1));
-                    return; /* exit condition */
+                if (lastChar !== ' ') {
+                    if (!this.lineList[index + 1]) { // when new line is needed
+                        this.lineList.push(new LineObj(letterWidth, this.lineList[index].firstIdx + this.lineList[index].count, 1));
+                    } else {
+                        this.lineList[index + 1].firstIdx--;
+                        this.lineList[index + 1].count += 1;
+                        this.lineList[index + 1].width += letterWidth;
+                    }
                 }
-
-                this.lineList[index + 1].firstIdx--;
-                this.lineList[index + 1].count += 1;
-                this.lineList[index + 1].width += letterWidth;
             }
             this.lineList[index].status = "settle";
 
@@ -513,7 +554,7 @@ class BlogUtil {
             if ((kind === "backspace" && this.Index["line"] === 0) || (kind === "arrowLeft" && parseFloat(this.$cursor.css("left")) > 1)) { // originally zero but 1 is an allowable error
                 this.$cursor.css("left", leftValue + "px");
                 this.$txtareaWrapper.css("left", leftValue + "px");
-                BlogUtil.Index["cursor"]--;
+                PostUtil.Index["cursor"]--;
 
                 if (kind === "backspace") {
                     this.lineList[0].count--;
@@ -596,13 +637,13 @@ class BlogUtil {
         }
 
         if (width > 0) {
-            BlogUtil.Index["cursor"]++;
+            PostUtil.Index["cursor"]++;
         } else if (width < 0) {
-            BlogUtil.Index["cursor"]--;
+            PostUtil.Index["cursor"]--;
         }
 
-        if (BlogUtil.Index["cursor"] - BlogUtil.Index["origin"] - BlogUtil.Index["text"] === 2) {
-            BlogUtil.Index["text"]++;
+        if (PostUtil.Index["cursor"] - PostUtil.Index["origin"] - PostUtil.Index["text"] === 2) {
+            PostUtil.Index["text"]++;
         }
     }
 

@@ -121,6 +121,7 @@
 .workplace-wrapper .wp .wp-code-draft {
     overflow: hidden;
     position: relative;
+    width: 1000000000px;
 }
 
 .workplace-wrapper .wp .wp-code-draft span {

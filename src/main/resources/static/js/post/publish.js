@@ -1,5 +1,6 @@
 $(() => {
     init();
+    initObserver();
 
     window.addEventListener('resize', function () {
         const workplaceWidth = document.querySelector(".workplace-wrapper").offsetWidth;
@@ -26,12 +27,12 @@ $(() => {
 
     $(document).on("keydown", (event) => {
         const $focusCtrArea = $(".wp > textarea");
-        const $textarea = BlogUtil.$txtareaWrapper.find("textarea").first();
-        let $targetSpan = BlogUtil.$targetPre.find("span").first();
+        const $textarea = PostUtil.$txtareaWrapper.find("textarea").first();
+        let $targetSpan = PostUtil.$targetPre.find("span").first();
 
-        if (BlogUtil.isActive) {
+        if (PostUtil.isActive) {
             if (event.key === "ArrowLeft") { // press ArrowLeft keyboard btn -> one step move cursor to left
-                if (BlogUtil.Index["cursor"] < 1) return;
+                if (PostUtil.Index["cursor"] < 1) return;
                 $textarea.val('');
                 if (event.originalEvent.isComposing) {
                     // for the mac OS korean processing system
@@ -39,61 +40,58 @@ $(() => {
                     return;
                 }
 
-                let leftChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
-                const width = BlogUtil.letterWidthConverter(leftChar);
-                BlogUtil.moveCursorOneStepHorizontally("arrowLeft", leftChar, width*(-1));
-                BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
-                BlogUtil.Index["text"] = 0;
+                let leftChar = $targetSpan.text().charAt(PostUtil.Index["cursor"] - 1);
+                const width = PostUtil.letterWidthConverter(leftChar);
+                PostUtil.moveCursorOneStepHorizontally("arrowLeft", leftChar, width*(-1));
+                PostUtil.Index["origin"] = PostUtil.Index["cursor"];
+                PostUtil.Index["text"] = 0;
             } else if (event.key === "ArrowRight") { // press ArrowRight keyboard btn -> one step move cursor to right
-                if (BlogUtil.Index["cursor"] >= $targetSpan.text().length) return;
+                if (PostUtil.Index["cursor"] >= $targetSpan.text().length) return;
                 $textarea.val('');
 
-                let rightChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"]);
-                const width = BlogUtil.letterWidthConverter(rightChar);
-                BlogUtil.moveCursorOneStepHorizontally("arrowRight", rightChar, width);
-                BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
-                BlogUtil.Index["text"] = 0;
+                let rightChar = $targetSpan.text().charAt(PostUtil.Index["cursor"]);
+                const width = PostUtil.letterWidthConverter(rightChar);
+                PostUtil.moveCursorOneStepHorizontally("arrowRight", rightChar, width);
+                PostUtil.Index["origin"] = PostUtil.Index["cursor"];
+                PostUtil.Index["text"] = 0;
             } else if (event.key === "ArrowUp") {
-                if (BlogUtil.Index["line"]  < 1) return;
+                if (PostUtil.Index["line"]  < 1) return;
                 $textarea.val('');
-                BlogUtil.Index["text"] = 0;
+                PostUtil.Index["text"] = 0;
 
-                BlogUtil.moveCursorOneStepVertically("arrowUp");
+                PostUtil.moveCursorOneStepVertically("arrowUp");
             } else if (event.key === "ArrowDown") {
-                if (BlogUtil.Index["line"]  >= BlogUtil.lineList.length - 1) return;
+                if (PostUtil.Index["line"]  >= PostUtil.lineList.length - 1) return;
                 $textarea.val('');
-                BlogUtil.Index["text"] = 0;
+                PostUtil.Index["text"] = 0;
 
-                BlogUtil.moveCursorOneStepVertically("arrowDown");
+                PostUtil.moveCursorOneStepVertically("arrowDown");
             } else if (event.key === "Backspace" && $textarea.val().length === 0) { // press backspace keyboard btn when textarea is empty
-                if (BlogUtil.Index["cursor"] < 1) return;
+                if (PostUtil.Index["cursor"] < 1) return;
 
-                const targetChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
+                const targetChar = $targetSpan.text().charAt(PostUtil.Index["cursor"] - 1);
 
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"] - 1) + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
+                $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["cursor"] - 1) + $targetSpan.text().slice(PostUtil.Index["cursor"]));
 
-                const width = BlogUtil.letterWidthConverter(targetChar);
-                BlogUtil.moveCursorOneStepHorizontally("backspace", targetChar, width*(-1));
-                BlogUtil.Index["origin"] = BlogUtil.Index["cursor"];
+                const width = PostUtil.letterWidthConverter(targetChar);
+                PostUtil.moveCursorOneStepHorizontally("backspace", targetChar, width*(-1));
+                PostUtil.Index["origin"] = PostUtil.Index["cursor"];
+            } else if (event.ctrlKey && (event.key === 'c' || event.code === 'KeyC')) { // press Ctrl + C btn
+
             } else if (event.ctrlKey && (event.key === 'v' || event.code === 'KeyV')) { // press Ctrl + V btn
                 $textarea.val('');
-                BlogUtil.Index["text"] = 0;
+                PostUtil.Index["text"] = 0;
 
-                BlogUtil.Flag["paste"] = true;
+                PostUtil.Flag["paste"] = true;
             }
-
-            /*if (event.keyCode === 13) { // enter
-                const $wpCodeLine = $("<pre class='wp-line'><span></span></pre>");
-                $(".wp-code").append($wpCodeLine);
-            }*/
         }
     });
 
     $(".wp > textarea").on("keydown",function (event) {
-        BlogUtil.timerPlayer();
-        BlogUtil.isActive = true;
+        PostUtil.timerPlayer();
+        PostUtil.isActive = true;
 
-        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
+        const $textarea = PostUtil.$txtareaWrapper.find("textarea");
         $textarea.focus();
         $(this).val('');
     })
@@ -104,56 +102,53 @@ $(() => {
             $wpText.remove();
         }
 
-        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
-        let $targetSpan = BlogUtil.$targetPre.find("span");
+        const $textarea = PostUtil.$txtareaWrapper.find("textarea");
+        let $targetSpan = PostUtil.$targetPre.find("span");
 
         let lastChar = $textarea.val().charAt($textarea.val().length - 1);
-        const lastCharwidth = BlogUtil.letterWidthConverter(lastChar);
+        const lastCharwidth = PostUtil.letterWidthConverter(lastChar);
 
         /*
         * when the paste flag is on this if statement takes action
         * */
-        if (BlogUtil.Flag["paste"]) {
-            console.log($textarea.val())
-            // todo process paste action
+        if (PostUtil.Flag["paste"] && $textarea.val()) {
+            PostUtil.pasteHandler()
 
-
-
-            BlogUtil.Flag["paste"] = false;
+            PostUtil.Flag["paste"] = false;
             return;
         }
 
-        if (BlogUtil.Index["origin"] + $textarea.val().length <= BlogUtil.Index["origin"] + BlogUtil.Index["text"]) {
+        if (PostUtil.Index["origin"] + $textarea.val().length <= PostUtil.Index["origin"] + PostUtil.Index["text"]) {
             /*
             * usual backspace keyboard btn pressed event is processed here
             * */
-            if (BlogUtil.Index["cursor"] < 1) return;
+            if (PostUtil.Index["cursor"] < 1) return;
 
             let width;
-            const innerSpans = BlogUtil.$targetPre.find("span");
+            const innerSpans = PostUtil.$targetPre.find("span");
             if (innerSpans.length > 1) {
                 /*
                 * if there's multiple spans, it means space has been typed right before this event happened
                 * so we're going to delete span element instead
                 * */
-                BlogUtil.$targetPre.children().last().remove();
-                width = BlogUtil.letterWidthConverter(' ');
-                BlogUtil.moveCursorOneStepHorizontally("backspace", ' ', width*(-1));
+                PostUtil.$targetPre.children().last().remove();
+                width = PostUtil.letterWidthConverter(' ');
+                PostUtil.moveCursorOneStepHorizontally("backspace", ' ', width*(-1));
             } else {
-                const targetChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
+                const targetChar = $targetSpan.text().charAt(PostUtil.Index["cursor"] - 1);
 
-                width = BlogUtil.letterWidthConverter(targetChar);
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"] - 1) + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
-                BlogUtil.moveCursorOneStepHorizontally("backspace", targetChar, width*(-1));
+                width = PostUtil.letterWidthConverter(targetChar);
+                $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["cursor"] - 1) + $targetSpan.text().slice(PostUtil.Index["cursor"]));
+                PostUtil.moveCursorOneStepHorizontally("backspace", targetChar, width*(-1));
             }
 
-            if (BlogUtil.Index["origin"] + $textarea.val().length !== BlogUtil.Index["origin"] + BlogUtil.Index["text"]) {
+            if (PostUtil.Index["origin"] + $textarea.val().length !== PostUtil.Index["origin"] + PostUtil.Index["text"]) {
                 /*
                 * this if statement is used when the backspace keyboard btn is pressed
                 * there's some specific weird cases(korean) when the event can't recognize if the backspace btn is pressed
                 * this if statement is used for this case
                 * */
-                BlogUtil.Index["text"]--;
+                PostUtil.Index["text"]--;
             }
 
             return;
@@ -164,8 +159,8 @@ $(() => {
         * */
         if (lastChar == ' ') {
 
-            const secondLastChar = $targetSpan.text().charAt(BlogUtil.Index["cursor"] - 1);
-            let innerSpans = BlogUtil.$targetPre.find("span");
+            const secondLastChar = $targetSpan.text().charAt(PostUtil.Index["cursor"] - 1);
+            let innerSpans = PostUtil.$targetPre.find("span");
             /*
             * space bar keyboard btn pressed event is processed here
             * */
@@ -174,7 +169,7 @@ $(() => {
                 * when space bar is pressed more than twice
                 * */
                 let $newLine = null;
-                const lastOne = BlogUtil.$targetPre.find(".new-line");
+                const lastOne = PostUtil.$targetPre.find(".new-line");
 
                 lastOne.removeClass("new-line");
                 if (lastOne.html() === '&nbsp;') {
@@ -187,30 +182,30 @@ $(() => {
                     $newLine.addClass("new-line");
                 }
 
-                BlogUtil.$targetPre.append($newLine);
+                PostUtil.$targetPre.append($newLine);
 
-                const width = BlogUtil.letterWidthConverter(' ');
+                const width = PostUtil.letterWidthConverter(' ');
 
-                BlogUtil.moveCursorOneStepHorizontally("add", ' ', width);
+                PostUtil.moveCursorOneStepHorizontally("add", ' ', width);
             } else if (secondLastChar && secondLastChar == ' ') {
                 /*
                 * when space bar is pressed twice
                 * */
-                const spareStr = $targetSpan.text().slice(BlogUtil.Index["cursor"]).trimStart();
+                const spareStr = $targetSpan.text().slice(PostUtil.Index["cursor"]).trimStart();
 
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"]).trimEnd());
+                $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["cursor"]).trimEnd());
                 const $spaceA = $("<span class='space-a'> </span>");
                 const $newLine = $("<span>&nbsp;</span>");
 
                 $newLine.addClass("new-line");
-                BlogUtil.$targetPre.append($spaceA);
-                BlogUtil.$targetPre.append($newLine);
+                PostUtil.$targetPre.append($spaceA);
+                PostUtil.$targetPre.append($newLine);
 
                 if (spareStr) {
                     const $spare = $(`<span>${spareStr}</span>`);
-                    BlogUtil.$targetPre.append($spare);
+                    PostUtil.$targetPre.append($spare);
 
-                    innerSpans = BlogUtil.$targetPre.find("span");
+                    innerSpans = PostUtil.$targetPre.find("span");
 
                     const spanList = [];
                     innerSpans.each((index, span) => {
@@ -219,20 +214,20 @@ $(() => {
 
                     const combinedSpan = spanList.join("");
 
-                    BlogUtil.$targetPre.empty();
+                    PostUtil.$targetPre.empty();
                     $targetSpan = $(`<span>${combinedSpan}</span>`);
-                    BlogUtil.$targetPre.append($targetSpan);
+                    PostUtil.$targetPre.append($targetSpan);
                 }
 
-                const width = BlogUtil.letterWidthConverter(' ');
-                BlogUtil.moveCursorOneStepHorizontally("add", ' ', width);
+                const width = PostUtil.letterWidthConverter(' ');
+                PostUtil.moveCursorOneStepHorizontally("add", ' ', width);
             } else {
-                const width = BlogUtil.letterWidthConverter(' ')
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"]) + ' ' + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
-                BlogUtil.moveCursorOneStepHorizontally("add", ' ', width);
+                const width = PostUtil.letterWidthConverter(' ')
+                $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["cursor"]) + ' ' + $targetSpan.text().slice(PostUtil.Index["cursor"]));
+                PostUtil.moveCursorOneStepHorizontally("add", ' ', width);
             }
 
-            BlogUtil.Index["text"] = BlogUtil.Index["cursor"] - BlogUtil.Index["origin"];
+            PostUtil.Index["text"] = PostUtil.Index["cursor"] - PostUtil.Index["origin"];
 
             return;
         }
@@ -240,7 +235,7 @@ $(() => {
         /*
         * the lastChar cannot be a space anymore from here
         * */
-        const innerSpans = BlogUtil.$targetPre.find("span");
+        const innerSpans = PostUtil.$targetPre.find("span");
 
         if (innerSpans.length > 1) {
             let spanList = [];
@@ -255,38 +250,38 @@ $(() => {
 
             const combinedSpan = spanList.join("");
 
-            BlogUtil.$targetPre.empty();
+            PostUtil.$targetPre.empty();
             $targetSpan = $(`<span>${combinedSpan}</span>`);
-            BlogUtil.$targetPre.append($targetSpan);
+            PostUtil.$targetPre.append($targetSpan);
         }
 
-        if (BlogUtil.containsKorean(lastChar)) {
+        if (PostUtil.containsKorean(lastChar)) {
 
-            if (BlogUtil.Index["origin"] + $textarea.val().length - BlogUtil.Index["cursor"]) {
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["origin"] + BlogUtil.Index["text"]) + $textarea.val().slice(BlogUtil.Index["text"]) + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
+            if (PostUtil.Index["origin"] + $textarea.val().length - PostUtil.Index["cursor"]) {
+                $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["origin"] + PostUtil.Index["text"]) + $textarea.val().slice(PostUtil.Index["text"]) + $targetSpan.text().slice(PostUtil.Index["cursor"]));
 
-                BlogUtil.moveCursorOneStepHorizontally("add", lastChar, lastCharwidth);
+                PostUtil.moveCursorOneStepHorizontally("add", lastChar, lastCharwidth);
             } else {
-                $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["origin"] + BlogUtil.Index["text"]) + $textarea.val().slice(BlogUtil.Index["text"]) + $targetSpan.text().slice(BlogUtil.Index["origin"] + BlogUtil.Index["text"] + 1));
+                $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["origin"] + PostUtil.Index["text"]) + $textarea.val().slice(PostUtil.Index["text"]) + $targetSpan.text().slice(PostUtil.Index["origin"] + PostUtil.Index["text"] + 1));
             }
         } else {
-            $targetSpan.text($targetSpan.text().slice(0, BlogUtil.Index["cursor"])  + lastChar + $targetSpan.text().slice(BlogUtil.Index["cursor"]));
+            $targetSpan.text($targetSpan.text().slice(0, PostUtil.Index["cursor"])  + lastChar + $targetSpan.text().slice(PostUtil.Index["cursor"]));
 
-            BlogUtil.moveCursorOneStepHorizontally("add", lastChar, lastCharwidth);
-            BlogUtil.Index["text"]++;
+            PostUtil.moveCursorOneStepHorizontally("add", lastChar, lastCharwidth);
+            PostUtil.Index["text"]++;
         }
     });
 
     $(".wp-textarea-wrapper textarea").on("blur", function (event) {
-        BlogUtil.clearTimerPlayer();
+        PostUtil.clearTimerPlayer();
         $(".wp .cursors").removeClass("cursor-visible");
-        BlogUtil.isActive = false;
+        PostUtil.isActive = false;
 
-        const $textarea = BlogUtil.$txtareaWrapper.find("textarea").first();
+        const $textarea = PostUtil.$txtareaWrapper.find("textarea").first();
         $textarea.val("")
-        BlogUtil.Index["text"] = 0
+        PostUtil.Index["text"] = 0
 
-        if (BlogUtil.lineList.length === 0) {
+        if (PostUtil.lineList.length === 0) {
             $(".wp-placeholder").show();
         }
     });
@@ -298,12 +293,12 @@ $(() => {
             $placeholder.hide();
         }
 
-        BlogUtil.mouseClickCursorMoveHandler(event.offsetX, event.offsetY)
+        PostUtil.mouseClickCursorMoveHandler(event.offsetX, event.offsetY)
 
-        BlogUtil.timerPlayer();
-        BlogUtil.isActive = true;
+        PostUtil.timerPlayer();
+        PostUtil.isActive = true;
 
-        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
+        const $textarea = PostUtil.$txtareaWrapper.find("textarea");
         $textarea.focus();
     })
 
@@ -313,24 +308,43 @@ $(() => {
             $placeholder.hide();
         }
 
-        BlogUtil.mouseClickCursorInitializer(event.offsetY)
+        PostUtil.mouseClickCursorInitializer(event.offsetY)
 
-        BlogUtil.timerPlayer();
-        BlogUtil.isActive = true;
+        PostUtil.timerPlayer();
+        PostUtil.isActive = true;
 
-        const $textarea = BlogUtil.$txtareaWrapper.find("textarea");
+        const $textarea = PostUtil.$txtareaWrapper.find("textarea");
         $textarea.focus();
     })
+
+
 })
 
 const init = () => {
-    BlogUtil.init($(".wp-textarea-wrapper"), $(".wp-code-draft span"), $(".wp-code .wp-line"), $(".wp-core .cursors .cursor"))
+    PostUtil.init($(".wp-textarea-wrapper"), $(".wp-code-draft span"), $(".wp-code .wp-line"), $(".wp-core .cursors .cursor"))
 
     const workplaceWidth = document.querySelector(".workplace-wrapper").offsetWidth;
     document.querySelector(".publish-footer").style.width = workplaceWidth + 'px';
 
     // initialize cursor size
     const lineHeight = parseFloat($(".wp-placeholder").css("line-height"));
-    BlogUtil.$cursor.css("height", lineHeight + "px");
-    BlogUtil.$txtareaWrapper.css("top", $(".wp-textarea-wrapper").height() + "px");
+    PostUtil.$cursor.css("height", lineHeight + "px");
+    PostUtil.$txtareaWrapper.css("top", $(".wp-textarea-wrapper").height() + "px");
+}
+
+const initObserver = () => {
+    const targetNode = document.querySelector('.wp-code-draft span');
+    const config = { attributes: true, attributeOldValue: true }
+
+    const callback = function (mutationList, observer) {
+        for (let mutation of mutationList) {
+            if (mutation.type === "attributes") {
+                console.log("속성이 변경되었습니다.", mutation.attributeName);
+                break;
+            }
+        }
+    };
+
+    const observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);
 }
