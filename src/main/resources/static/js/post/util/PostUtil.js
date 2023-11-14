@@ -10,7 +10,11 @@ class PostUtil {
     /*
     * root object of blog, only one root object is needed
     * */
-    static root = {
+    static Root = {
+        // index
+        Index: {
+            paragraph: -1 // paragraph index
+        },
         paragraphList: []
     }
 
@@ -30,7 +34,7 @@ class PostUtil {
     /* the current targeting pre tag
     * you gotta initialize it to properly use this utility class
     * jquery type html element form is needed
-    * */
+    * */   // 삭제 요망
     static $targetPre = null;
 
     /* the html element corresponds to cursor
@@ -63,6 +67,13 @@ class PostUtil {
         this.setDraftSpan($draftSpan);
         this.setTargetPre($targetPre);
         this.setCursor($cursor)
+    }
+
+    /*
+    * return Root Object
+    * */
+    static getRoot() {
+        return this.Root;
     }
 
     /*
@@ -185,7 +196,7 @@ class PostUtil {
         return ans;
     }
 
-    static letterWidthConverter(targetChar) {
+    static letterWidthConverter(targetChar) { // 삭제 요망
         if (!targetChar) return 0;
 
         const $targetSpan = this.$targetPre.find("span").first();

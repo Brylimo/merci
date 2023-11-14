@@ -1,6 +1,5 @@
 $(() => {
     init();
-    initObserver();
 
     window.addEventListener('resize', function () {
         const workplaceWidth = document.querySelector(".workplace-wrapper").offsetWidth;
@@ -100,6 +99,10 @@ $(() => {
         const $wpText = $(".wp-txt");
         if ($wpText[0]) {
             $wpText.remove();
+
+            const $pre = $(".wp-code > pre");
+            PostUtil.getRoot().paragraphList.push(new ParagraphObj($pre))
+            PostUtil.getRoot().Index["paragraph"]++;
         }
 
         const $textarea = PostUtil.$txtareaWrapper.find("textarea");
@@ -332,8 +335,7 @@ const init = () => {
     PostUtil.$txtareaWrapper.css("top", $(".wp-textarea-wrapper").height() + "px");
 }
 
-const initObserver = () => {
-    const targetNode = document.querySelector('.wp-code-draft span');
+const addAttrObserver = (element, cb) => {
     const config = { attributes: true, attributeOldValue: true }
 
     const callback = function (mutationList, observer) {
@@ -346,5 +348,5 @@ const initObserver = () => {
     };
 
     const observer = new MutationObserver(callback);
-    observer.observe(targetNode, config);
+    observer.observe(element, config);
 }

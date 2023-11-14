@@ -1,5 +1,8 @@
 class ParagraphObj {
-    constructor() {
+    constructor($pre) {
+        this.$targetPre = $pre
+
+        // guess all unicode letters have same width and all ascii letters have same width
         this.letterWidth = {
             unicode: 0,
             ascii: 0
