@@ -55,3 +55,9 @@ merci 프로젝트는 juneberry diary와 같이 블로그/다이어리 기능과
 ### 블로그 에디터
 ![](https://cdn.juneberrydiary.com/c88c3c6d-c470-4998-920e-f98912bbc3a3.png)
 ![](https://cdn.juneberrydiary.com/29d31211-2d20-4c2a-8bc5-dd82f634d988.png)
+
+## 아키텍처
+![](https://cdn.juneberrydiary.com/babf5331-adb3-4f6a-9365-55423f324cff.jpg)
+
+## ERD
+![](https://cdn.juneberrydiary.com/88963ed0-bc7d-4682-9fc5-0f76f5a83b63.jpg)
